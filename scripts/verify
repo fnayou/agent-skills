@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+REPOSITORY_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
+SKILL_DIR="${REPOSITORY_ROOT}/skills/worktree-lanes"
+SKILL_FILE="${SKILL_DIR}/SKILL.md"
+TERMINOLOGY_FILE="${SKILL_DIR}/references/terminology.md"
+
+fail() {
+  printf 'FAIL: %s\n' "$1" >&2
+  exit 1
+}
+
+[[ -f "${SKILL_FILE}" ]] || fail "missing ${SKILL_FILE}"
+[[ -f "${TERMINOLOGY_FILE}" ]] || fail "missing terminology reference"
+[[ $(sed -n '1p' "${SKILL_FILE}") == '---' ]] || fail "missing YAML frontmatter"
+grep -qx 'name: worktree-lanes' "${SKILL_FILE}" || fail "skill name does not match directory"
+grep -q '^description: .*worktree' "${SKILL_FILE}" || fail "description lacks worktree trigger"
+grep -q 'references/terminology.md' "${SKILL_FILE}" || fail "terminology is not discoverable"
+
+bash -n "${REPOSITORY_ROOT}/scripts/install"
+bash -n "${REPOSITORY_ROOT}/scripts/verify"
+
+VERIFY_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/agent-skills-verify.XXXXXX")
+case "${VERIFY_ROOT}" in
+  "${TMPDIR:-/tmp}"/agent-skills-verify.*) ;;
+  *) fail "unexpected temporary directory: ${VERIFY_ROOT}" ;;
+esac
+trap 'rm -rf -- "${VERIFY_ROOT}"' EXIT
+
+AGENT_SKILLS_TARGET="${VERIFY_ROOT}/agents" \
+CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/claude" \
+  "${REPOSITORY_ROOT}/scripts/install"
+
+AGENT_SKILLS_TARGET="${VERIFY_ROOT}/agents" \
+CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/claude" \
+  "${REPOSITORY_ROOT}/scripts/install" --check
+
+[[ $(readlink "${VERIFY_ROOT}/agents/worktree-lanes") == "${SKILL_DIR}" ]] || \
+  fail "shared Agent Skills link has the wrong target"
+[[ $(readlink "${VERIFY_ROOT}/claude/worktree-lanes") == "${SKILL_DIR}" ]] || \
+  fail "Claude skill link has the wrong target"
+
+mkdir -p "${VERIFY_ROOT}/collision"
+printf '%s\n' 'preserve-me' > "${VERIFY_ROOT}/collision/worktree-lanes"
+if AGENT_SKILLS_TARGET="${VERIFY_ROOT}/collision" \
+  CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/unused" \
+  "${REPOSITORY_ROOT}/scripts/install" >/dev/null 2>&1; then
+  fail "installer replaced an existing path"
+fi
+grep -qx 'preserve-me' "${VERIFY_ROOT}/collision/worktree-lanes" || \
+  fail "installer changed an existing path"
+
+if grep -R -q '/Users/' "${SKILL_DIR}"; then
+  fail "skill contains a machine-specific absolute path"
+fi
+
+printf '%s\n' 'PASS: worktree-lanes source and installer verified'

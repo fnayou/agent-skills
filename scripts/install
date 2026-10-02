@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+REPOSITORY_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
+SKILL_SOURCE="${REPOSITORY_ROOT}/skills/worktree-lanes"
+AGENT_SKILLS_TARGET="${AGENT_SKILLS_TARGET:-${HOME}/.agents/skills}"
+CLAUDE_SKILLS_TARGET="${CLAUDE_SKILLS_TARGET:-${HOME}/.claude/skills}"
+MODE="install"
+
+usage() {
+  printf '%s\n' 'Usage: scripts/install [--check]'
+}
+
+if [[ ${1:-} == "--check" ]]; then
+  MODE="check"
+  shift
+fi
+
+if (( $# != 0 )); then
+  usage >&2
+  exit 64
+fi
+
+if [[ ! -f "${SKILL_SOURCE}/SKILL.md" ]]; then
+  printf 'Missing skill source: %s\n' "${SKILL_SOURCE}" >&2
+  exit 1
+fi
+
+ensure_link() {
+  local target_root=$1
+  local destination="${target_root}/worktree-lanes"
+
+  if [[ -L "${destination}" ]]; then
+    local existing
+    existing=$(readlink "${destination}")
+    if [[ "${existing}" == "${SKILL_SOURCE}" ]]; then
+      printf 'OK %s\n' "${destination}"
+      return
+    fi
+    printf 'Refusing to replace different symlink: %s -> %s\n' \
+      "${destination}" "${existing}" >&2
+    exit 1
+  fi
+
+  if [[ -e "${destination}" ]]; then
+    printf 'Refusing to replace existing path: %s\n' "${destination}" >&2
+    exit 1
+  fi
+
+  if [[ "${MODE}" == "check" ]]; then
+    printf 'Missing link: %s\n' "${destination}" >&2
+    exit 1
+  fi
+
+  mkdir -p "${target_root}"
+  ln -s "${SKILL_SOURCE}" "${destination}"
+  printf 'LINKED %s -> %s\n' "${destination}" "${SKILL_SOURCE}"
+}
+
+ensure_link "${AGENT_SKILLS_TARGET}"
+ensure_link "${CLAUDE_SKILLS_TARGET}"
