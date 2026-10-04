@@ -6,6 +6,7 @@ REPOSITORY_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
 SKILL_DIR="${REPOSITORY_ROOT}/skills/worktree-lanes"
 SKILL_FILE="${SKILL_DIR}/SKILL.md"
 TERMINOLOGY_FILE="${SKILL_DIR}/references/terminology.md"
+MANAGER_FILE="${SKILL_DIR}/references/manager-workspaces.md"
 
 fail() {
   printf 'FAIL: %s\n' "$1" >&2
@@ -18,6 +19,9 @@ fail() {
 grep -qx 'name: worktree-lanes' "${SKILL_FILE}" || fail "skill name does not match directory"
 grep -q '^description: .*worktree' "${SKILL_FILE}" || fail "description lacks worktree trigger"
 grep -q 'references/terminology.md' "${SKILL_FILE}" || fail "terminology is not discoverable"
+[[ -f "${MANAGER_FILE}" ]] || fail "missing manager workspaces reference"
+grep -q 'references/manager-workspaces.md' "${SKILL_FILE}" || fail "manager workspaces reference is not discoverable"
+grep -q 'terminology.md' "${MANAGER_FILE}" || fail "manager workspaces reference does not link the terminology"
 
 bash -n "${REPOSITORY_ROOT}/scripts/install"
 bash -n "${REPOSITORY_ROOT}/scripts/verify"
