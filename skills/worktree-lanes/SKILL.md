@@ -69,6 +69,16 @@ lane, and integration branch on separate lines even when they are equal.
 - Treat another lane's branch, files, processes, and resource claim as active
   work. Read across lanes only when needed to establish state or compare a
   contract; do not clean up or repair another lane opportunistically.
+- Opening another pane or starting another agent in the same worktree creates
+  neither a new lane nor write isolation. Default to one writing agent per
+  lane, and use separate worktree lanes for parallel writers.
+- Keep same-lane helpers to bounded read-only investigation or review; name
+  each one's lane, role, working directory, authority, prohibitions, and stop
+  condition.
+- Run multiple writers in one lane only with explicit operator direction and
+  non-overlapping file and process scope.
+- Serialize operations that can affect a shared resource or external system
+  across all agents in a lane, including read-only helpers.
 - Treat worktree lanes as concurrency isolation, not security sandboxes.
   Branch code in a lane can access every credential and service available to
   its process.
