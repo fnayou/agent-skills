@@ -13,6 +13,12 @@ exists.
 Read [the canonical terminology](references/terminology.md) before producing a
 lane census.
 
+Read [manager workspaces](references/manager-workspaces.md) only when a
+terminal or session manager is used to inspect, create, operate, or close lane
+state, or when the environment, the lane contract, or an inventory indicates
+existing manager state. Read it before the first manager action or lane
+closure. Git-only work with no such indication does not load it.
+
 ## Establish the lane census
 
 Before the first repository-affecting action:
@@ -118,7 +124,11 @@ A lane is ready to close only when each item is observed:
   unknown.
 - **No shared resource owned:** hand off any it owns first.
 
-Report each item. If any is unmet or unknown, stop before removal.
+Report each item. If any is unmet or unknown, stop before removing an existing
+worktree. When the checkout path is already absent, no path remains to remove:
+report the items that cannot be observed, and clean up only stale records that
+are separately inventoried and authorized. If manager state exists, follow
+[manager workspaces](references/manager-workspaces.md).
 
 ## Work with other coordination skills
 
