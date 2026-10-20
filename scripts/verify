@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-REPOSITORY_ROOT="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
+SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+REPOSITORY_ROOT="$(CDPATH='' cd -- "${SCRIPT_DIR}/.." && pwd)"
 SKILL_DIR="${REPOSITORY_ROOT}/skills/worktree-lanes"
 SKILL_FILE="${SKILL_DIR}/SKILL.md"
 TERMINOLOGY_FILE="${SKILL_DIR}/references/terminology.md"
