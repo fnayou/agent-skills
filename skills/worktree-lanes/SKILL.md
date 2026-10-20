@@ -124,9 +124,15 @@ follow these steps.
 
 A lane is ready to close only when each item is observed:
 
-- **Work preserved:** its commits are reachable from a retained ref, or the
-  operator has verified integration by squash, rebase, or another
-  non-ancestry method.
+- **Work preserved:** choose a named evidence ref that every authorized action
+  will retain, including action side effects. For ancestry-based integration,
+  observe that the lane HEAD is an ancestor of the ref's resolved commit, then
+  record the lane HEAD, ref, and resolved commit. For squash, rebase, or another
+  non-ancestry method, use patch-equivalence evidence against a named ref that
+  meets the same retention rule, or record the operator's verification. A ref
+  is not retained when remote-branch deletion will also remove its local
+  remote-tracking ref. A push result, pull request, or CI status alone does not
+  prove preservation.
 - **Tree clean:** status is clean, and ignored files that removal would
   discard are reported.
 - **No running process:** a project-declared process or manager inventory

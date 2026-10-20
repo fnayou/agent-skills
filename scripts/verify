@@ -22,6 +22,11 @@ grep -q 'references/terminology.md' "${SKILL_FILE}" || fail "terminology is not 
 [[ -f "${MANAGER_FILE}" ]] || fail "missing manager workspaces reference"
 grep -q 'references/manager-workspaces.md' "${SKILL_FILE}" || fail "manager workspaces reference is not discoverable"
 grep -q 'terminology.md' "${MANAGER_FILE}" || fail "manager workspaces reference does not link the terminology"
+grep -q '^|[[:space:]]*\*\*manager workspace group\*\*[[:space:]]*|' "${TERMINOLOGY_FILE}" || fail "manager workspace group term is missing"
+grep -q '^|[[:space:]]*\*\*lifecycle object\*\*[[:space:]]*|' "${TERMINOLOGY_FILE}" || fail "lifecycle object term is missing"
+grep -q '^|[[:space:]]*\*\*compound manager action\*\*[[:space:]]*|' "${TERMINOLOGY_FILE}" || fail "compound manager action term is missing"
+grep -qx '## Observe each object separately' "${MANAGER_FILE}" || fail "manager object inventory rules are missing"
+grep -qx '## Compound manager actions' "${MANAGER_FILE}" || fail "compound manager action rules are missing"
 
 bash -n "${REPOSITORY_ROOT}/scripts/install"
 bash -n "${REPOSITORY_ROOT}/scripts/verify"

@@ -20,6 +20,7 @@ Observe each of these from its own current source:
   is unknown, and no fetch is made to find out without authorization;
 - the Git worktree registration: listed, listed-prunable, or absent;
 - the checkout path: present or absent;
+- the manager workspace group and its current members, where grouping exists;
 - the manager workspace;
 - its manager tabs and manager panes;
 - agent occupancy.
@@ -30,6 +31,12 @@ from a name or path, or from earlier output.
 A command that requested branch deletion or cleanup is not evidence that it
 happened. Report each object from the current inventory, and attribute a cause
 only when evidence supports it.
+
+Use Git state for worktree registrations, local branch refs, remote-tracking
+refs, divergence, and tree cleanliness. Use current remote evidence for remote
+branches. Use manager inventory for workspace groups, workspaces, tabs, panes,
+processes, and agent occupancy. These sources complement one another; none
+substitutes for another.
 
 ## Extend the lane census
 
@@ -44,6 +51,7 @@ Manager-backed lane state
 - Remote branch: <present-or-absent with evidence, or unknown>
 - Worktree registration: <listed, listed-prunable, or absent>
 - Checkout path: <present-or-absent>
+- Manager workspace group: <group-id and member-workspaces, none, not-applicable, or unknown>
 - Manager workspace: <workspace-id> for <resolved-path>, none, or unknown
 - Layout: <relevant-tabs-and-panes, or not-applicable>
 - Agent occupancy: <agent, pane, directory, lifecycle state>, none, or unknown
@@ -53,17 +61,49 @@ Manager-backed lane state
 Include the focus line only when the manager exposes focus and the requested
 action can change it.
 
+## Compound manager actions
+
+Before any manager command that can change a lifecycle object, establish from
+current manager help or documentation for the installed version whether it is
+compound and what effects it has. If either remains unknown, stop. Do not infer
+effects from the command name, observed state, or an earlier run.
+
+For a compound manager action:
+
+1. Enumerate every affected object in
+   [Observe each object separately](#observe-each-object-separately), plus every
+   affected process and lane.
+2. Obtain authorization covering each affected object and action.
+3. Observe every applicable readiness gate that the action would make
+   unavailable. Do not use the action when it crosses ordered teardown steps
+   and prevents a required intermediate inventory.
+
+Afterwards, inventory every lifecycle object separately. A partial effect is
+a partial failure: report the resulting state and do not repair or clean it up
+without separate authorization.
+
 ## Create or open
 
-1. Give the manager an explicit worktree path. Do not rely on its current
+1. Choose the manager layout:
+   - When one request creates or opens several linked lanes, use one manager
+     workspace group when the manager supports grouping and neither the lane
+     contract nor the operator requires independent workspaces. Record the
+     expected member workspaces and resolved paths. Create a group, or reuse
+     one only when the operator names it or every current member resolves to
+     the current lane or a lane named by the request. Add each linked-lane
+     workspace using the opaque group identifier returned by the manager or
+     read from current inventory, then verify that actual membership matches
+     the expected membership. If it differs, stop and report it.
+   - Otherwise, use independent top-level workspaces.
+2. Give the manager an explicit worktree path. Do not rely on its current
    directory, a default, or the focused object.
-2. Take workspace, tab, and pane IDs from the manager's responses. Treat them
+3. Take workspace, tab, and pane IDs from the manager's responses. Treat them
    as opaque; never predict, construct, or reuse one from earlier output.
-3. Read the Git worktree list and the manager inventory again. Continue only
+4. Read the Git worktree list and the manager inventory again. Continue only
    when the resolved worktree path from each is the same.
-4. When the request specifies layout or focus, verify that state from the
+5. When the request specifies layout or focus, verify that state from the
    manager.
-5. Start an agent only in a manager pane whose ID and working directory were
+6. Start an agent only in a manager pane whose ID and working directory were
    verified. Call it ready only when the manager detects the intended agent in
    that pane; a launch command that returned is not readiness.
 
@@ -75,6 +115,7 @@ Each of these actions needs explicit authorization, though one operator
 instruction may name several:
 
 - stopping or releasing agents;
+- closing or removing the manager workspace group;
 - closing the manager workspace;
 - removing the Git worktree or a stale registration;
 - deleting the local branch ref;
@@ -86,7 +127,16 @@ authority over agents, the manager workspace, or the worktree. Perform only
 the authorized actions and report every other object as retained.
 
 A stale remote-tracking ref is reported and retained unless its removal is
-explicitly named.
+explicitly named or an authorized remote-branch deletion removes it as a side
+effect. Include that side effect in the deletion scope and verify it afterwards.
+
+A manager workspace group is retained and reported unless its removal is
+explicitly authorized. Apply the compound-action rules when its removal is
+compound, and verify its resulting state.
+
+Authorization for a manager workspace group covers only the members and
+affected lifecycle objects reported when the operator grants it. If membership
+or expected effects change, obtain new authorization for the changed scope.
 
 ### Teardown
 
@@ -116,10 +166,10 @@ the next.
    remains. Apply every project-declared check for detached or background
    processes as well; missing required evidence is unknown and blocks the next
    step.
-5. Observe **Tree clean**, including the ignored files that removal would
-   discard, immediately before removing the Git worktree. Remove it only when
-   authorized, then verify that the registration and the checkout path are
-   both absent.
+5. Re-observe **Work preserved** and **Tree clean**, including the ignored files
+   that removal would discard, immediately before removing the Git worktree.
+   Remove it only when authorized, then verify that the registration and the
+   checkout path are both absent.
 
 Removing the Git worktree requires its manager workspace, agents, and
 processes to be absent. If worktree removal is authorized but manager closure
@@ -127,10 +177,11 @@ is not, retain the worktree and stop.
 
 ### Branch refs
 
-Deleting a branch ref is independent of the teardown above. Attempt it
-whenever that ref's deletion is explicitly authorized, then verify that the
-ref is absent. An authorized ref-only deletion may run from any lane, because
-it requires no manager or worktree teardown.
+Deleting a branch ref is independent of the teardown above. Re-observe **Work
+preserved** against refs that will remain after every authorized deletion and
+its side effects. Then attempt each explicitly authorized deletion and verify
+that the ref is absent. An authorized ref-only deletion may run from any lane,
+because it requires no manager or worktree teardown.
 
 If the ref is checked out or deletion otherwise fails, report that and stop
 rather than changing any other lifecycle object. If local deletion is refused
@@ -139,9 +190,7 @@ Never remove a worktree merely to enable deletion.
 
 If safe deletion is rejected after a squash or rebase, do not force it; an
 ancestry check that fails is not proof that integration is missing. Apply the
-core **Work preserved** rule: use patch-equivalence evidence against refs
-already recorded locally when the tooling supports it, otherwise require the
-operator's verification. Do not fetch implicitly. Delete by force only on
+core **Work preserved** rule. Do not fetch implicitly. Delete by force only on
 explicit authority for forced deletion.
 
 ### Checkout path already absent

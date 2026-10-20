@@ -19,10 +19,13 @@ documentation.
 | **claim** | The project-defined transfer of a shared resource to a new resource owner. | switch |
 | **handoff** | The verified transition of work or resource ownership from one lane to another. | claim, when work as well as resources moves |
 | **manager workspace** | A UI or session container owned by a terminal or session manager and associated with a worktree path, which may no longer exist. It can exist without an agent. | worktree, lane |
+| **manager workspace group** | A manager-reported grouping of manager workspaces. It is not itself a worktree lane. | grouped workspace |
 | **manager tab** | Where the manager supports it, a named subdivision of a manager workspace that groups manager panes. | window |
 | **manager pane** | A terminal or session slot in a manager workspace. It may contain a shell, a command, or an agent. | agent, session |
 | **agent occupancy** | The agent identity, manager pane, working directory, and lifecycle state that the manager reports. | running agent, when inferred rather than reported |
-| **manager inventory** | The manager-reported set of manager workspaces, manager tabs and manager panes, worktree mappings, agent occupancy, and, where the manager reports them, pane contents and foreground state. | process list |
+| **manager inventory** | The manager-reported set of manager workspace groups, manager workspaces, manager tabs and manager panes, worktree mappings, agent occupancy, and, where the manager reports them, pane contents and foreground state. | process list |
+| **lifecycle object** | One separately observed ref, remote branch, worktree registration, checkout path, manager object, process, or lane whose state a manager action can change. | resource, as a blanket term |
+| **compound manager action** | One manager command that can affect more than one lifecycle object. | group close, as the general category |
 
 ## Usage rules
 
@@ -31,5 +34,7 @@ documentation.
 - Use **main** only when referring to a branch literally named `main`.
 - Keep **primary lane**, **integration branch**, and **resource owner** separate;
   they can identify three different lanes or refs.
+- Treat a **manager workspace group** as manager topology, not as another name
+  for any member manager workspace or its worktree lane.
 - Name the lane in every action that could affect a branch, checkout, process,
   shared resource, or external system.
