@@ -1,0 +1,54 @@
+name: Docs
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - "zensical.toml"
+      - "requirements-docs.txt"
+      - "scripts/check_docs.py"
+      - ".github/workflows/docs-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Pin every action to a full commit SHA and keep the version in a comment.
+      - uses: actions/checkout@<full-commit-sha> # <version>
+      - uses: actions/setup-python@<full-commit-sha> # <version>
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements-docs.txt
+      - run: zensical build --strict
+      # Set --base-path to the Pages path, for example /<repository>/.
+      - run: python scripts/check_docs.py site --base-path /<repository>/
+      - uses: actions/upload-pages-artifact@<full-commit-sha> # <version>
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: site/
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Deploys with the built-in token and Pages permissions. No personal token.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@<full-commit-sha> # <version>

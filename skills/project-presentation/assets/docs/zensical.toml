@@ -1,0 +1,25 @@
+# Validate every key against the pinned Zensical release before relying on it.
+# Do not assume a Material for MkDocs plugin or option works here.
+[project]
+site_name = "example-project"
+site_url = "https://<owner>.github.io/<repository>/"
+site_description = "One verified sentence about what the project does."
+docs_dir = "website"
+site_dir = "site"
+repo_url = "https://github.com/<owner>/<repository>"
+
+nav = [
+    { "Home" = "index.md" },
+    { "Getting Started" = "getting-started.md" },
+]
+
+extra_css = ["stylesheets/macchiato.css"]
+
+[project.theme]
+language = "en"
+palette = [
+    { scheme = "macchiato", primary = "custom", accent = "custom" },
+]
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"

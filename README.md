@@ -22,8 +22,10 @@ The canonical vocabulary is in
 Audits, bootstraps, or aligns a repository's visual identity. The brand track
 covers the Catppuccin Macchiato foundation with a per-project accent, a
 Git-tracked SVG-first workflow, a deterministic generator, and a freshness
-check. It carries starter templates and inspects the repository first, asking
-only about missing or conflicting choices.
+check. The documentation track covers a Zensical site in `website/`, an
+offline site checker, and GitHub Pages deployment through Actions. Each track
+works without the other. The skill carries starter templates and inspects the
+repository first, asking only about missing or conflicting choices.
 
 ## Install
 
