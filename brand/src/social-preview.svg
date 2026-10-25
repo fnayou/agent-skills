@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img">
+  <title>{{NAME}} social preview: {{PILLARS}}</title>
+  <rect width="1280" height="640" fill="{{CRUST}}"/>
+  <rect x="40" y="40" width="1200" height="560" rx="32" fill="{{BASE}}" stroke="{{SURFACE1}}" stroke-width="2"/>
+  <rect x="80" y="96" width="112" height="26" rx="13" fill="{{ACCENT}}"/>
+  <rect x="112" y="142" width="112" height="26" rx="13" fill="{{TEXT}}"/>
+  <rect x="80" y="188" width="112" height="26" rx="13" fill="{{ACCENT}}"/>
+  <text x="80" y="332" font-family="sans-serif" font-size="96" font-weight="700" fill="{{TEXT}}">{{NAME}}</text>
+  <text x="80" y="400" font-family="sans-serif" font-size="32" fill="{{SUBTEXT1}}">{{TAGLINE}}</text>
+  <text x="80" y="520" font-family="sans-serif" font-size="30" fill="{{ACCENT}}">{{PILLARS}}</text>
+</svg>

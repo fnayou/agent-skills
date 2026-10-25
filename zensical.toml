@@ -1,0 +1,26 @@
+[project]
+site_name = "agent-skills"
+site_url = "https://fnayou.github.io/agent-skills/"
+site_description = "Portable Agent Skills for cross-agent development workflows."
+docs_dir = "website"
+site_dir = "site"
+repo_url = "https://github.com/fnayou/agent-skills"
+
+nav = [
+    { "Home" = "index.md" },
+    { "Getting Started" = "getting-started.md" },
+    { "Skills" = "skills.md" },
+]
+
+extra_css = ["stylesheets/macchiato.css"]
+
+[project.theme]
+language = "en"
+logo = "assets/favicon.svg"
+favicon = "assets/favicon.svg"
+palette = [
+    { scheme = "macchiato", primary = "custom", accent = "custom" },
+]
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
