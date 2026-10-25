@@ -2,13 +2,20 @@
 version: "3"
 
 tasks:
+  docs:assets:
+    desc: Copy generated brand assets into the site
+    cmds:
+      - mkdir -p website/assets
+      - cp brand/generated/social-preview.png website/assets/
+
   docs:build:
     desc: Build the public site
+    deps: [docs:assets]
     cmds:
       - zensical build --strict
 
   docs:check:
     desc: Build the public site and check it
     cmds:
-      - zensical build --strict
-      - python scripts/check_docs.py site
+      - task: docs:build
+      - python scripts/check_docs.py site --require-og-image

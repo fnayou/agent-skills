@@ -156,6 +156,16 @@ printf '%s' '<!doctype html><html lang="en"><head><title>N</title></head><body><
 DOCS_PY=("${PYTHON:-python3}" -I "${BRAND_SKILL}/scripts/check_docs.py")
 "${DOCS_PY[@]}" "${DOCS_ROOT}/site" --palette "${BRAND_SKILL}/assets/brand/data/brand.json" >/dev/null || \
   fail "documentation check failed on a valid site"
+if "${DOCS_PY[@]}" "${DOCS_ROOT}/site" --require-og-image >/dev/null 2>&1; then
+  fail "documentation check accepted a site without og:image"
+fi
+for page in index.html next/index.html; do
+  sed -i.bak 's#</head>#<meta property="og:image" content="https://example.test/x.png"></head>#' \
+    "${DOCS_ROOT}/site/${page}"
+done
+"${DOCS_PY[@]}" "${DOCS_ROOT}/site" --require-og-image >/dev/null || \
+  fail "documentation check rejected a site with og:image"
+[[ -f "${BRAND_SKILL}/assets/docs/overrides/main.html" ]] || fail "social card override is missing"
 printf '%s' '<!doctype html><html><head></head><body><a href="missing/"></a><img src="a.png"></body></html>' \
   > "${DOCS_ROOT}/site/next/index.html"
 if "${DOCS_PY[@]}" "${DOCS_ROOT}/site" >/dev/null 2>&1; then

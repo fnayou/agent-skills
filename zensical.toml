@@ -16,6 +16,7 @@ extra_css = ["stylesheets/macchiato.css"]
 
 [project.theme]
 language = "en"
+custom_dir = "overrides"
 logo = "assets/favicon.svg"
 favicon = "assets/favicon.svg"
 palette = [

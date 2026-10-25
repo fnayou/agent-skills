@@ -13,6 +13,7 @@ brand assets, reuse them as described under
   It is not published.
 - `zensical.toml` at the repository root configures the site, with
   `docs_dir = "website"`.
+- `overrides/` holds theme overrides, set with `custom_dir = "overrides"`.
 
 Never publish `docs/` by accident. A page belongs in `website/` only when a
 visitor needs it.
@@ -91,6 +92,22 @@ into a second place that can drift.
   drawn from repository data in the brand track, so the page stays accurate.
 - With no brand assets, use a text title and skip the logo.
 
+## Social cards
+
+A shared link shows a preview card only when the page carries Open Graph and
+Twitter tags that point to an absolute image URL. Use the starter
+[`overrides/main.html`](../assets/docs/overrides/main.html), which adds
+`og:title`, `og:description`, `og:image`, `og:url`, and `twitter:card` from the
+site configuration.
+
+- Set `site_url` with a trailing slash, because the image URL is built from it.
+- The image is `assets/social-preview.png`, a raster derivative of the brand
+  track's social preview. Copy it into the site at build time. With no brand
+  track, supply a 1280×640 PNG yourself or leave the cards out and drop
+  `--require-og-image`.
+- GitHub's own repository preview is separate and has no API: ask the operator
+  to upload the same image under Settings → General → Social preview.
+
 ## Build and check
 
 Provide two tasks, named for the project's task runner:
@@ -105,7 +122,8 @@ The checker works offline on the generated HTML and reports:
 - an image without an `alt` attribute and a link with no accessible name;
 - a broken internal link or a missing anchor;
 - with `--base-path`, a root-absolute link outside the Pages path;
-- with `--palette`, a text or accent color below 4.5:1 on the base color.
+- with `--palette`, a text or accent color below 4.5:1 on the base color;
+- with `--require-og-image`, a page without an absolute `og:image` tag.
 
 Run `docs:check` in CI on pull requests and before every deployment.
 
@@ -133,6 +151,8 @@ brackets and every `example` value.
 
 - [`assets/docs/zensical.toml`](../assets/docs/zensical.toml): site
   configuration.
+- [`assets/docs/overrides/main.html`](../assets/docs/overrides/main.html):
+  social card tags.
 - [`assets/docs/website/index.md`](../assets/docs/website/index.md) and
   [`getting-started.md`](../assets/docs/website/getting-started.md): page
   skeletons with the implemented and planned convention.
@@ -170,6 +190,7 @@ brackets and every `example` value.
 Confirm each item by running or reading it:
 
 - `docs:check` passes, and fails after you break a link on purpose.
+- Every page has an absolute `og:image` that returns the image once deployed.
 - No page states a capability the repository does not implement; planned work
   is labeled.
 - The workflow deploys only from the default branch and uses no personal token.

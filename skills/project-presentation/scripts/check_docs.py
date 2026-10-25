@@ -7,6 +7,7 @@ Copy this file into a project's scripts directory.
     check_docs.py site --base-path /repo/     also reject links outside the base path
     check_docs.py site --palette brand/data/brand.json
                                               also check palette contrast
+    check_docs.py site --require-og-image     every page needs an absolute og:image
 
 Standard library only. Exits 1 and prints one line per problem.
 """
@@ -35,6 +36,7 @@ class Page(HTMLParser):
         self.in_title = False
         self.h1 = 0
         self.main = 0
+        self.og_image = ""
         self.in_anchor: list[dict] = []
 
     def handle_starttag(self, tag: str, pairs: list[tuple[str, str | None]]) -> None:
@@ -48,6 +50,8 @@ class Page(HTMLParser):
             self.h1 += 1
         elif tag == "main":
             self.main += 1
+        elif tag == "meta" and attrs.get("property") == "og:image":
+            self.og_image = attrs.get("content", "").strip()
         elif tag == "img" and "alt" not in attrs:
             self.errors.append(f"{self.name}:{line}: image has no alt attribute")
         if attrs.get("id"):
@@ -78,7 +82,9 @@ class Page(HTMLParser):
         if self.in_anchor:
             self.in_anchor[-1]["text"] += data
 
-    def problems(self) -> list[str]:
+    def problems(self, require_og_image: bool = False) -> list[str]:
+        if require_og_image and not self.og_image.startswith(("https://", "http://")):
+            self.errors.append(f"{self.name}: missing absolute og:image meta tag")
         if not self.lang:
             self.errors.append(f"{self.name}: missing html lang attribute")
         if not self.title.strip():
@@ -122,7 +128,7 @@ def palette_problems(path: Path) -> list[str]:
     return problems
 
 
-def check_site(site: Path, base_path: str) -> list[str]:
+def check_site(site: Path, base_path: str, require_og_image: bool = False) -> list[str]:
     root = site.resolve()
     pages = sorted(root.rglob("*.html")) if root.is_dir() else []
     if not pages:
@@ -134,7 +140,7 @@ def check_site(site: Path, base_path: str) -> list[str]:
         scan = Page(str(rel))
         scan.feed(html.read_text(encoding="utf-8"))
         scans[rel] = scan
-        errors += scan.problems()
+        errors += scan.problems(require_og_image)
     prefix = base_path.strip("/")
     for rel, scan in scans.items():
         for line, href in scan.links:
@@ -166,8 +172,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("site", type=Path)
     parser.add_argument("--base-path", default="")
     parser.add_argument("--palette", type=Path)
+    parser.add_argument("--require-og-image", action="store_true")
     args = parser.parse_args(argv)
-    problems = check_site(args.site, args.base_path)
+    problems = check_site(args.site, args.base_path, args.require_og_image)
     if args.palette:
         problems += palette_problems(args.palette)
     for problem in problems:
