@@ -138,4 +138,28 @@ if "${BRAND_PY[@]}" --check >/dev/null 2>&1; then
   fail "brand check accepted stale output"
 fi
 
-printf '%s\n' 'PASS: skills, installer, and brand generator verified'
+grep -q 'references/docs-track.md' "${BRAND_FILE}" || fail "documentation track is not discoverable"
+# The tracks stay independent: neither reference may link the other.
+if grep -q '(brand-track.md' "${BRAND_SKILL}/references/docs-track.md" || \
+  grep -q '(docs-track.md' "${BRAND_SKILL}/references/brand-track.md"; then
+  fail "a track reference links the other track"
+fi
+
+# Exercise the starter documentation checker on a minimal built site.
+DOCS_ROOT="${VERIFY_ROOT}/docs-project"
+mkdir -p "${DOCS_ROOT}/site"
+printf '%s' '<!doctype html><html lang="en"><head><title>T</title></head><body><main><h1>T</h1><a href="next/">N</a></main></body></html>' \
+  > "${DOCS_ROOT}/site/index.html"
+mkdir -p "${DOCS_ROOT}/site/next"
+printf '%s' '<!doctype html><html lang="en"><head><title>N</title></head><body><main><h1>N</h1><a href="../">Home</a></main></body></html>' \
+  > "${DOCS_ROOT}/site/next/index.html"
+DOCS_PY=("${PYTHON:-python3}" -I "${BRAND_SKILL}/scripts/check_docs.py")
+"${DOCS_PY[@]}" "${DOCS_ROOT}/site" --palette "${BRAND_SKILL}/assets/brand/data/brand.json" >/dev/null || \
+  fail "documentation check failed on a valid site"
+printf '%s' '<!doctype html><html><head></head><body><a href="missing/"></a><img src="a.png"></body></html>' \
+  > "${DOCS_ROOT}/site/next/index.html"
+if "${DOCS_PY[@]}" "${DOCS_ROOT}/site" >/dev/null 2>&1; then
+  fail "documentation check accepted a broken site"
+fi
+
+printf '%s\n' 'PASS: skills, installer, and brand and documentation starters verified'

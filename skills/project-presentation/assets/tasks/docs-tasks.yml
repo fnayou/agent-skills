@@ -1,0 +1,14 @@
+# Add under `tasks:` in the project's Taskfile.yml, or include this file.
+version: "3"
+
+tasks:
+  docs:build:
+    desc: Build the public site
+    cmds:
+      - zensical build --strict
+
+  docs:check:
+    desc: Build the public site and check it
+    cmds:
+      - zensical build --strict
+      - python scripts/check_docs.py site

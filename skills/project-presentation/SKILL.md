@@ -1,6 +1,6 @@
 ---
 name: project-presentation
-description: Audit, bootstrap, or align a repository's visual identity and public presentation. Use when a project needs a logo, README banner, social preview, color palette, generated SVG brand assets, or a brand freshness check. Reads the repository's existing choices first and asks only about what is missing or in conflict.
+description: Audit, bootstrap, or align a repository's visual identity and public documentation site. Use when a project needs a logo, README banner, social preview, color palette, generated SVG brand assets, a brand freshness check, a Zensical documentation site, or GitHub Pages deployment. Reads the repository's existing choices first and asks only about what is missing or in conflict.
 ---
 
 # Project Presentation
@@ -11,6 +11,7 @@ independent tracks; use only the one the request names.
 | Track | Use it to | Reference |
 |---|---|---|
 | Brand | Define palette, accent, logo, banners, favicon, and generated SVG assets | [brand track](references/brand-track.md) |
+| Documentation | Build or align the public site in `website/` and its Pages deployment | [documentation track](references/docs-track.md) |
 
 Read the track reference before the first change. Do not load a track the
 request does not need.
