@@ -204,6 +204,39 @@ worktree-removal authority. Use a prune that affects every prunable record
 only when all of them are in the authorized scope; otherwise retain the record
 and report it.
 
+### After a squash or rebase merge
+
+A merged pull request leaves several independent objects behind. Observe each
+from its own source, in this order, and report each as removed or retained:
+
+1. Pull request state, from current remote evidence.
+2. Remote branch: the host may delete it automatically on merge.
+3. Local branch ref.
+4. Locally recorded remote-tracking ref.
+5. Git worktree registration.
+6. Checkout path, with the ignored files that removal would discard.
+7. Manager workspace, and its group where one exists.
+
+Rebase and squash rewrite commits, so an ancestry check on the lane HEAD fails
+even though the work is integrated. Use the core **Work preserved** rule: name
+a retained ref that contains the integrated work, then record patch-equivalence
+evidence against it. A worktree manager may also report the branch as
+integrated by tree equivalence; treat that as evidence to record, not as
+authorization.
+
+A manager removal command such as `wt remove` is a compound manager action. It
+can delete the checkout, the local branch ref, and the ignored files in one
+step. Read the installed version's help first, enumerate those objects, and
+obtain authorization that covers each one.
+
+Remote branch deletion by the host leaves a stale remote-tracking ref. Report
+and retain it. Removing it contacts the remote, for example
+`git remote prune origin` or `git fetch --prune`, so run it only when the
+operator names that action.
+
+The manager can drop a workspace on its own after a merge while Git still lists
+the worktree. Never infer one from the other; read both inventories.
+
 ### Completion
 
 Closure is complete only when every object intended for removal is absent from

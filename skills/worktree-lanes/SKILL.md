@@ -1,6 +1,6 @@
 ---
 name: worktree-lanes
-description: Establish and coordinate Git worktree lanes before repository work. Use when operating in a linked worktree, when multiple worktrees or parallel agent sessions exist, or when work may contend for project-declared shared resources. Do not use for ordinary single-checkout Git work.
+description: Establish and coordinate Git worktree lanes before repository work. Use when operating in a linked worktree, when multiple worktrees or parallel agent sessions exist, or when work may contend for project-declared shared resources. Also matches everyday phrases such as grouped workspace or main worktree. Do not use for ordinary single-checkout Git work.
 ---
 
 # Worktree Lanes
@@ -44,7 +44,10 @@ Before the first repository-affecting action:
    instructions, development documentation, task runner, or worktree tooling.
    Identify only resources and ownership checks that the project explicitly
    declares. Do not infer that Docker, secrets, databases, ports, or caches are
-   shared merely because they exist.
+   shared merely because they exist. When no contract is found, report
+   `none-found`, treat every shared resource as `unknown`, and follow
+   [lane contract](references/lane-contract.md) only if the operator asks for
+   one.
 7. Report the lane census before proposing a lane-sensitive action.
 
 ```text
@@ -97,13 +100,22 @@ lane, and integration branch on separate lines even when they are equal.
   lane census or closure readiness never implies it.
 - A claim does not authorize rebuilds, refreshes, migrations, deployments, or
   server access.
+- Installing worktree managers, plugins, or other tools is outside this skill.
+  It belongs to the project's own installer and needs explicit operator
+  approval.
 - Rebase, force-push, merge, deploy, credential movement, worktree or branch
   removal, other destructive cleanup, and external mutations require explicit
   operator authorization, which covers only the lane it names.
 
 ## Hand off a shared resource
 
-Stop at the first step that is unsupported, ambiguous, or fails.
+Merging a pull request performs no handoff. Before the primary lane receives
+a shared resource after integration, establish that its checked-out commit
+contains the integrated work and that its tree is clean. If either is false
+or cannot be established without fetching, stop and report; updating the
+primary lane is a separate action requiring operator authorization. Then
+follow these steps, stopping at the first one that is unsupported, ambiguous,
+or fails.
 
 1. Identify the shared resource, its resource owner, and the receiving lane
    from the lane contract and the lane census.
@@ -112,13 +124,6 @@ Stop at the first step that is unsupported, ambiguous, or fails.
 3. Perform the project-declared claim.
 4. Repeat the ownership check. The handoff is complete only when it names the
    receiving lane as resource owner; run no dependent work before then.
-
-Merging a pull request performs no handoff. Before the primary lane receives
-a shared resource after integration, establish that its checked-out commit
-contains the integrated work and that its tree is clean. If either is false
-or cannot be established without fetching, stop and report; updating the
-primary lane is a separate action requiring operator authorization. Then
-follow these steps.
 
 ## Close a lane
 
