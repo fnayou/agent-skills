@@ -1,0 +1,40 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Show available agent-skills tasks
+    cmds:
+      - task --list
+
+  verify:
+    desc: Verify skills and the installer
+    cmds:
+      - ./scripts/verify
+
+  brand:generate:
+    desc: Generate brand assets
+    cmds:
+      - python scripts/brand_generate.py --generate
+
+  brand:check:
+    desc: Check brand assets are current
+    cmds:
+      - python scripts/brand_generate.py --check
+
+  docs:assets:
+    desc: Copy generated brand assets into the site
+    cmds:
+      - mkdir -p website/assets
+      - cp brand/generated/readme-banner.svg brand/generated/favicon.svg website/assets/
+
+  docs:build:
+    desc: Build the public site
+    deps: [docs:assets]
+    cmds:
+      - zensical build --strict
+
+  docs:check:
+    desc: Build the public site and check it
+    cmds:
+      - task: docs:build
+      - python scripts/check_docs.py site --base-path /agent-skills/ --palette brand/data/brand.json

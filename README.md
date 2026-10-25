@@ -1,7 +1,12 @@
+<p align="center">
+  <img src="brand/generated/readme-banner.svg" alt="agent-skills: Portable Agent Skills for cross-agent development workflows.">
+</p>
+
 # Agent Skills
 
 Portable, public [Agent Skills](https://agentskills.io/) for coordinating AI
-coding agents across repositories and harnesses.
+coding agents across repositories and harnesses. Documentation:
+<https://fnayou.github.io/agent-skills/>.
 
 The skills contain tool-independent operating policy. Repository-specific
 commands and infrastructure rules stay in each project's own instructions.

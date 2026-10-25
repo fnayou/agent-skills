@@ -16,6 +16,11 @@ across coding-agent harnesses.
 - Do not install skills or create links in a user's home directory without
   explicit approval for that installation.
 - Run `./scripts/verify` before committing.
+- Brand assets live in `brand/` and are generated: edit `brand/src` or
+  `brand/data`, run `task brand:generate`, and never edit `brand/generated` by
+  hand. `task brand:check` and `task docs:check` must pass.
+- Public documentation lives in `website/`; `docs/` is internal and is not
+  published.
 
 Make focused changes and explain behavioral decisions in the affected skill or
 its reference material rather than creating parallel sources of truth.

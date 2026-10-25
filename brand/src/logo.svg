@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 96" role="img">
+  <title>{{NAME}} logo</title>
+  <!-- Three parallel lanes: the middle one is offset, like work handed off between lanes. -->
+  <rect x="8" y="12" width="64" height="16" rx="8" fill="{{ACCENT}}"/>
+  <rect x="24" y="40" width="64" height="16" rx="8" fill="{{TEXT}}"/>
+  <rect x="8" y="68" width="64" height="16" rx="8" fill="{{ACCENT}}"/>
+  <text x="112" y="62" font-family="sans-serif" font-size="44" font-weight="700" fill="{{TEXT}}">{{NAME}}</text>
+</svg>

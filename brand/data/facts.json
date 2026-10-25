@@ -1,0 +1,5 @@
+{
+  "name": "agent-skills",
+  "tagline": "Portable Agent Skills for cross-agent development workflows.",
+  "pillars": ["Portable SKILL.md format", "Safe symlink installer", "Verified in CI"]
+}
