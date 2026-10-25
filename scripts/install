@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 REPOSITORY_ROOT="$(CDPATH='' cd -- "${SCRIPT_DIR}/.." && pwd)"
-SKILL_SOURCE="${REPOSITORY_ROOT}/skills/worktree-lanes"
+SKILLS_ROOT="${REPOSITORY_ROOT}/skills"
 AGENT_SKILLS_TARGET="${AGENT_SKILLS_TARGET:-${HOME}/.agents/skills}"
 CLAUDE_SKILLS_TARGET="${CLAUDE_SKILLS_TARGET:-${HOME}/.claude/skills}"
 MODE="install"
@@ -22,20 +22,28 @@ if (( $# != 0 )); then
   exit 64
 fi
 
-if [[ ! -f "${SKILL_SOURCE}/SKILL.md" ]]; then
-  printf 'Missing skill source: %s\n' "${SKILL_SOURCE}" >&2
+SKILL_NAMES=()
+for skill_dir in "${SKILLS_ROOT}"/*/; do
+  [[ -f "${skill_dir}SKILL.md" ]] || continue
+  skill_dir=${skill_dir%/}
+  SKILL_NAMES+=("${skill_dir##*/}")
+done
+
+if (( ${#SKILL_NAMES[@]} == 0 )); then
+  printf 'Missing skill source: %s\n' "${SKILLS_ROOT}" >&2
   exit 1
 fi
 
-ensure_link() {
-  local target_root=$1
-  local destination="${target_root}/worktree-lanes"
+# Prints OK, MISSING or fails on a conflicting path.
+inspect_link() {
+  local source=$1
+  local destination=$2
 
   if [[ -L "${destination}" ]]; then
     local existing
     existing=$(readlink "${destination}")
-    if [[ "${existing}" == "${SKILL_SOURCE}" ]]; then
-      printf 'OK %s\n' "${destination}"
+    if [[ "${existing}" == "${source}" ]]; then
+      printf 'OK\n'
       return
     fi
     printf 'Refusing to replace different symlink: %s -> %s\n' \
@@ -48,15 +56,33 @@ ensure_link() {
     exit 1
   fi
 
-  if [[ "${MODE}" == "check" ]]; then
-    printf 'Missing link: %s\n' "${destination}" >&2
-    exit 1
-  fi
-
-  mkdir -p "${target_root}"
-  ln -s "${SKILL_SOURCE}" "${destination}"
-  printf 'LINKED %s -> %s\n' "${destination}" "${SKILL_SOURCE}"
+  printf 'MISSING\n'
 }
 
-ensure_link "${AGENT_SKILLS_TARGET}"
-ensure_link "${CLAUDE_SKILLS_TARGET}"
+TARGET_ROOTS=("${AGENT_SKILLS_TARGET}" "${CLAUDE_SKILLS_TARGET}")
+
+# Inspect every destination first so a conflict leaves all targets untouched.
+for name in "${SKILL_NAMES[@]}"; do
+  for target_root in "${TARGET_ROOTS[@]}"; do
+    state=$(inspect_link "${SKILLS_ROOT}/${name}" "${target_root}/${name}")
+    if [[ "${state}" == "MISSING" && "${MODE}" == "check" ]]; then
+      printf 'Missing link: %s\n' "${target_root}/${name}" >&2
+      exit 1
+    fi
+  done
+done
+
+for name in "${SKILL_NAMES[@]}"; do
+  source="${SKILLS_ROOT}/${name}"
+  for target_root in "${TARGET_ROOTS[@]}"; do
+    destination="${target_root}/${name}"
+    state=$(inspect_link "${source}" "${destination}")
+    if [[ "${state}" == "OK" ]]; then
+      printf 'OK %s\n' "${destination}"
+      continue
+    fi
+    mkdir -p "${target_root}"
+    ln -s "${source}" "${destination}"
+    printf 'LINKED %s -> %s\n' "${destination}" "${source}"
+  done
+done

@@ -3,7 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 REPOSITORY_ROOT="$(CDPATH='' cd -- "${SCRIPT_DIR}/.." && pwd)"
-SKILL_DIR="${REPOSITORY_ROOT}/skills/worktree-lanes"
+SKILLS_ROOT="${REPOSITORY_ROOT}/skills"
+SKILL_DIR="${SKILLS_ROOT}/worktree-lanes"
 SKILL_FILE="${SKILL_DIR}/SKILL.md"
 TERMINOLOGY_FILE="${SKILL_DIR}/references/terminology.md"
 MANAGER_FILE="${SKILL_DIR}/references/manager-workspaces.md"
@@ -12,6 +13,30 @@ fail() {
   printf 'FAIL: %s\n' "$1" >&2
   exit 1
 }
+
+SKILL_NAMES=()
+for skill_dir in "${SKILLS_ROOT}"/*/; do
+  skill_dir=${skill_dir%/}
+  name=${skill_dir##*/}
+  [[ -f "${skill_dir}/SKILL.md" ]] || fail "skills/${name} has no SKILL.md"
+  [[ $(sed -n '1p' "${skill_dir}/SKILL.md") == '---' ]] || fail "${name}: missing YAML frontmatter"
+  grep -qx "name: ${name}" "${skill_dir}/SKILL.md" || fail "${name}: skill name does not match directory"
+  grep -q '^description: .\+' "${skill_dir}/SKILL.md" || fail "${name}: missing description"
+  if grep -R -q '/Users/' "${skill_dir}"; then
+    fail "${name}: skill contains a machine-specific absolute path"
+  fi
+  # Every relative markdown link in a skill must resolve to a file.
+  for file in "${skill_dir}/SKILL.md" "${skill_dir}"/references/*.md; do
+    [[ -f "${file}" ]] || continue
+    while IFS= read -r link; do
+      target=${link%%#*}
+      [[ -n "${target}" ]] || continue
+      [[ -e "$(dirname "${file}")/${target}" ]] || fail "${name}: broken link ${link} in ${file##*/}"
+    done < <(grep -oE '\]\([^)]+\)' "${file}" | sed -E 's/^\]\((.*)\)$/\1/' | grep -vE '^(https?:|mailto:|#)' || true)
+  done
+  SKILL_NAMES+=("${name}")
+done
+(( ${#SKILL_NAMES[@]} > 0 )) || fail "no skills found"
 
 [[ -f "${SKILL_FILE}" ]] || fail "missing ${SKILL_FILE}"
 [[ -f "${TERMINOLOGY_FILE}" ]] || fail "missing terminology reference"
@@ -46,10 +71,12 @@ AGENT_SKILLS_TARGET="${VERIFY_ROOT}/agents" \
 CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/claude" \
   "${REPOSITORY_ROOT}/scripts/install" --check
 
-[[ $(readlink "${VERIFY_ROOT}/agents/worktree-lanes") == "${SKILL_DIR}" ]] || \
-  fail "shared Agent Skills link has the wrong target"
-[[ $(readlink "${VERIFY_ROOT}/claude/worktree-lanes") == "${SKILL_DIR}" ]] || \
-  fail "Claude skill link has the wrong target"
+for name in "${SKILL_NAMES[@]}"; do
+  [[ $(readlink "${VERIFY_ROOT}/agents/${name}") == "${SKILLS_ROOT}/${name}" ]] || \
+    fail "shared Agent Skills link for ${name} has the wrong target"
+  [[ $(readlink "${VERIFY_ROOT}/claude/${name}") == "${SKILLS_ROOT}/${name}" ]] || \
+    fail "Claude skill link for ${name} has the wrong target"
+done
 
 mkdir -p "${VERIFY_ROOT}/collision"
 printf '%s\n' 'preserve-me' > "${VERIFY_ROOT}/collision/worktree-lanes"
@@ -61,8 +88,54 @@ fi
 grep -qx 'preserve-me' "${VERIFY_ROOT}/collision/worktree-lanes" || \
   fail "installer changed an existing path"
 
-if grep -R -q '/Users/' "${SKILL_DIR}"; then
-  fail "skill contains a machine-specific absolute path"
+# A conflict on one skill must leave every other target untouched.
+mkdir -p "${VERIFY_ROOT}/partial/agents" "${VERIFY_ROOT}/partial/claude"
+printf '%s\n' 'preserve-me' > "${VERIFY_ROOT}/partial/claude/worktree-lanes"
+if AGENT_SKILLS_TARGET="${VERIFY_ROOT}/partial/agents" \
+  CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/partial/claude" \
+  "${REPOSITORY_ROOT}/scripts/install" >/dev/null 2>&1; then
+  fail "installer replaced an existing path in the second target"
+fi
+[[ -z $(ls -A "${VERIFY_ROOT}/partial/agents") ]] || \
+  fail "installer linked into a target despite a conflict elsewhere"
+
+ln -s /nonexistent "${VERIFY_ROOT}/partial/agents/worktree-lanes"
+if AGENT_SKILLS_TARGET="${VERIFY_ROOT}/partial/agents" \
+  CLAUDE_SKILLS_TARGET="${VERIFY_ROOT}/unused" \
+  "${REPOSITORY_ROOT}/scripts/install" --check >/dev/null 2>&1; then
+  fail "installer accepted a different symlink"
 fi
 
-printf '%s\n' 'PASS: worktree-lanes source and installer verified'
+BRAND_SKILL="${SKILLS_ROOT}/project-presentation"
+BRAND_FILE="${BRAND_SKILL}/SKILL.md"
+grep -q 'references/brand-track.md' "${BRAND_FILE}" || fail "brand track is not discoverable"
+
+# Exercise the starter brand generator in an isolated copy.
+BRAND_ROOT="${VERIFY_ROOT}/brand-project"
+mkdir -p "${BRAND_ROOT}/scripts"
+cp -R "${BRAND_SKILL}/assets/brand" "${BRAND_ROOT}/brand"
+cp "${BRAND_SKILL}/scripts/brand_generate.py" "${BRAND_ROOT}/scripts/"
+BRAND_PY=("${PYTHON:-python3}" -I "${BRAND_ROOT}/scripts/brand_generate.py")
+if "${BRAND_PY[@]}" --check >/dev/null 2>&1; then
+  fail "brand check passed with no generated output"
+fi
+if command -v rsvg-convert >/dev/null 2>&1; then
+  "${BRAND_PY[@]}" --generate >/dev/null
+else
+  # Rasters need rsvg-convert; verify the SVG path without them.
+  python3 -I - "${BRAND_ROOT}/brand/data/brand.json" <<'PY'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+data["rasters"] = []
+json.dump(data, open(path, "w"), indent=2)
+PY
+  "${BRAND_PY[@]}" --generate >/dev/null
+fi
+"${BRAND_PY[@]}" --check >/dev/null || fail "brand check failed on fresh output"
+printf '%s\n' '<!-- stale -->' >> "${BRAND_ROOT}/brand/generated/logo.svg"
+if "${BRAND_PY[@]}" --check >/dev/null 2>&1; then
+  fail "brand check accepted stale output"
+fi
+
+printf '%s\n' 'PASS: skills, installer, and brand generator verified'

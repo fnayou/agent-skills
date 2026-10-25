@@ -1,0 +1,13 @@
+# Add under `tasks:` in the project's Taskfile.yml, or include this file.
+version: "3"
+
+tasks:
+  brand:generate:
+    desc: Generate brand assets
+    cmds:
+      - python scripts/brand_generate.py --generate
+
+  brand:check:
+    desc: Check brand assets are current
+    cmds:
+      - python scripts/brand_generate.py --check

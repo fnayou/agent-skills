@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img">
+  <title>{{NAME}} logo</title>
+  <!-- Placeholder mark. Replace with the project's own vector paths. -->
+  <rect x="8" y="8" width="80" height="80" rx="18" fill="{{SURFACE0}}" stroke="{{ACCENT}}" stroke-width="4"/>
+  <circle cx="48" cy="48" r="16" fill="{{ACCENT}}"/>
+  <path d="M112 62 V34 h14 a14 14 0 0 1 0 28 z" fill="{{TEXT}}"/>
+</svg>
