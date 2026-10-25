@@ -84,6 +84,19 @@ together.
 - Draw architecture and workflow diagrams from machine-readable repository
   data where practical, so they cannot drift from the implementation.
 
+## Publish the social preview
+
+The generated `social-preview.png` is a file in the repository. No platform
+shows it until someone publishes it.
+
+- **GitHub repository preview:** GitHub has no API for it. Ask the operator to
+  upload the PNG under Settings → General → Social preview. Report it as a
+  step for them; do not attempt it yourself.
+- **Site link cards:** a documentation site needs Open Graph tags pointing to
+  the same image. Those belong to the documentation track; skip them when the
+  project has no site.
+- A platform caches the old preview, so a change can take time to appear.
+
 ## Generate and check
 
 Provide two tasks, named for the project's task runner:
