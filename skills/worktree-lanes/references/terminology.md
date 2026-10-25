@@ -27,6 +27,18 @@ documentation.
 | **lifecycle object** | One separately observed ref, remote branch, worktree registration, checkout path, manager object, process, or lane whose state a manager action can change. | resource, as a blanket term |
 | **compound manager action** | One manager command that can affect more than one lifecycle object. | group close, as the general category |
 
+## Everyday phrases
+
+Operators often use other words. Map them to the preferred term, and use the
+preferred term in reports.
+
+| Operator says | Use |
+|---|---|
+| grouped workspace, worktrees grouped under the repository | manager workspace group |
+| main worktree, worktree on main | primary worktree (check the branch separately) |
+| base branch, target branch | integration branch |
+| switch the container to this worktree | claim |
+
 ## Usage rules
 
 - Use **worktree lanes** for the general practice and **worktree lane** for one
