@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - "website/**"
+      - "overrides/**"
+      - "brand/generated/**"
       - "zensical.toml"
       - "requirements-docs.txt"
       - "scripts/check_docs.py"
@@ -30,9 +32,13 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install -r requirements-docs.txt
+      # Copy brand output the site references; drop this step with no brand track.
+      - run: |
+          mkdir -p website/assets
+          cp brand/generated/social-preview.png website/assets/
       - run: zensical build --strict
       # Set --base-path to the Pages path, for example /<repository>/.
-      - run: python scripts/check_docs.py site --base-path /<repository>/
+      - run: python scripts/check_docs.py site --base-path /<repository>/ --require-og-image
       - uses: actions/upload-pages-artifact@<full-commit-sha> # <version>
         if: github.ref == 'refs/heads/main'
         with:

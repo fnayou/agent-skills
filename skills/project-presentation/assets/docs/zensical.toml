@@ -17,6 +17,8 @@ extra_css = ["stylesheets/macchiato.css"]
 
 [project.theme]
 language = "en"
+# Social card tags live in overrides/main.html.
+custom_dir = "overrides"
 palette = [
     { scheme = "macchiato", primary = "custom", accent = "custom" },
 ]

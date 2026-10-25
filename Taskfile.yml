@@ -25,7 +25,7 @@ tasks:
     desc: Copy generated brand assets into the site
     cmds:
       - mkdir -p website/assets
-      - cp brand/generated/readme-banner.svg brand/generated/favicon.svg website/assets/
+      - cp brand/generated/readme-banner.svg brand/generated/favicon.svg brand/generated/social-preview.png website/assets/
 
   docs:build:
     desc: Build the public site
@@ -37,4 +37,4 @@ tasks:
     desc: Build the public site and check it
     cmds:
       - task: docs:build
-      - python scripts/check_docs.py site --base-path /agent-skills/ --palette brand/data/brand.json
+      - python scripts/check_docs.py site --base-path /agent-skills/ --palette brand/data/brand.json --require-og-image
