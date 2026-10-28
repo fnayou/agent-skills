@@ -9,7 +9,11 @@ repo_url = "https://github.com/fnayou/agent-skills"
 nav = [
     { "Home" = "index.md" },
     { "Getting Started" = "getting-started.md" },
-    { "Skills" = "skills.md" },
+    { "Skills" = [
+        { "worktree-lanes" = "skills/worktree-lanes.md" },
+        { "project-presentation" = "skills/project-presentation.md" },
+        { "agent-browser" = "skills/agent-browser.md" },
+    ] },
 ]
 
 extra_css = ["stylesheets/macchiato.css"]
