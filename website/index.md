@@ -26,4 +26,4 @@ the open Agent Skills `SKILL.md` format.
 ## Where to go next
 
 - [Getting Started](getting-started.md) installs the skills from a checkout.
-- [Skills](skills.md) describes each skill in more detail.
+- Skills: [worktree-lanes](skills/worktree-lanes.md), [project-presentation](skills/project-presentation.md), and [agent-browser](skills/agent-browser.md) each have their own page.
