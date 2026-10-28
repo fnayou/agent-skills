@@ -17,9 +17,9 @@ where settings reach the launcher.
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `AGENT_BROWSER_PACKAGE` | `@playwright/mcp@latest` | npm package spec. Pin an exact version so every client runs the same one. |
-| `AGENT_BROWSER_EXECUTABLE` | empty | Chromium-family browser binary to launch instead of a Playwright channel. |
-| `AGENT_BROWSER_CHANNEL` | empty (Playwright's `chrome`) | Playwright `--browser` value when no executable is set, for example `chromium`, which needs `npx playwright install chromium`. |
+| `AGENT_BROWSER_PACKAGE` | `@playwright/mcp@0.0.83` | npm package spec. The default is an exact version so every client runs the same one; raise it deliberately. |
+| `AGENT_BROWSER_EXECUTABLE` | empty | Chromium-family browser binary to launch instead of a Playwright channel, for example Helium (`/Applications/Helium.app/Contents/MacOS/Helium`). No particular browser is required. |
+| `AGENT_BROWSER_CHANNEL` | empty (Playwright's `chrome`) | Playwright `--browser` value when no executable is set, for example `msedge`. |
 | `AGENT_BROWSER_PROFILE` | macOS `~/Library/Application Support/agent-browser/profiles/ai-agent`; elsewhere `${XDG_DATA_HOME:-~/.local/share}/agent-browser/profiles/ai-agent` | Persistent profile used by `playwright-auth`. |
 | `AGENT_BROWSER_OUTPUT` | macOS `~/Library/Caches/agent-browser`; elsewhere `${XDG_CACHE_HOME:-~/.cache}/agent-browser` | Snapshots and screenshots, in `playwright/` and `playwright-auth/` subdirectories. |
 
@@ -102,6 +102,6 @@ Then run `scripts/check`.
 
 1. Ask the agent to open the site with `playwright-auth`. A browser window
    opens on the agent profile.
-2. The user signs in, including any 2FA, in that window.
+2. The user signs in, including any 2FA, passkey, or CAPTCHA, in that window. The agent never types the password or the code.
 3. Later `playwright-auth` sessions reuse the stored login until the site
    expires it.
