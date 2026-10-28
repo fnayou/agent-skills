@@ -25,7 +25,7 @@ else
 fi
 CONFIG_FILE="${AGENT_BROWSER_CONFIG:-${XDG_CONFIG_HOME:-${HOME}/.config}/agent-browser/config}"
 
-AGENT_BROWSER_PACKAGE="@playwright/mcp@latest"
+AGENT_BROWSER_PACKAGE="@playwright/mcp@0.0.83"
 AGENT_BROWSER_EXECUTABLE=""
 AGENT_BROWSER_CHANNEL=""
 AGENT_BROWSER_PROFILE="${DATA_ROOT}/profiles/ai-agent"

@@ -49,6 +49,8 @@ anything the agent types is recorded in transcripts and logs.
 - The agent acts as the user. Confirm with the user before every irreversible
   action: submit, pay, delete, send, publish, change settings.
 - Session expired: ask the user to sign in again, the same way.
+- The agent never types the password or the code, and never asks for them in chat. A passkey, CAPTCHA, or device-trust prompt is the user's too: stop and ask, never work around it.
+- Only `playwright-auth` carries a login. `playwright` is isolated and in-memory, so a site that needs a login opens on its login page there.
 
 ## Safari
 

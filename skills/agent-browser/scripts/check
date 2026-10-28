@@ -118,11 +118,11 @@ def check_clients():
                 report("WARN", f"client.{client}.{name}", "declared but disabled")
                 continue
             cmd = " ".join(command_of(entry))
-            if name.startswith("playwright") and cmd and "agent-browser-mcp" not in cmd:
+            if name.startswith("playwright") and "agent-browser-mcp" not in cmd:
                 report("WARN", f"client.{client}.{name}", f"bypasses the launcher: {cmd}")
             else:
                 report("OK", f"client.{client}.{name}", "declared")
-            declared[name].append(client)
+                declared[name].append(client)
     return declared
 
 
@@ -155,7 +155,7 @@ def check_browser(cfg):
             report("FAIL", "browser", f"not executable: {exe}")
     else:
         channel = cfg.get("AGENT_BROWSER_CHANNEL") or "chrome (Playwright default)"
-        report("OK", "browser", f"Playwright channel {channel}")
+        report("OK", "browser", f"Playwright channel {channel} (install not verified)")
 
 
 def check_profile(cfg):
@@ -185,7 +185,13 @@ def check_profile(cfg):
 def check_output(cfg):
     root = Path(cfg.get("AGENT_BROWSER_OUTPUT", ""))
     for sub in ("playwright", "playwright-auth"):
-        report("OK", f"output.{sub}", str(root / sub))
+        path = root / sub
+        if path.exists() and not os.access(path, os.W_OK):
+            report("FAIL", f"output.{sub}", f"not writable: {path}")
+        elif not path.exists():
+            report("WARN", f"output.{sub}", f"not created yet: {path} (the launcher creates it)")
+        else:
+            report("OK", f"output.{sub}", str(path))
 
 
 def check_safari():
