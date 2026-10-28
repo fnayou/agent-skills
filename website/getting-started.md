@@ -22,7 +22,7 @@ The links are:
 ~/.claude/skills/<skill>  -> <checkout>/skills/<skill>
 ```
 
-`<skill>` is `worktree-lanes` and `project-presentation`. Moving or deleting
+`<skill>` is `worktree-lanes`, `project-presentation`, and `agent-browser`. Moving or deleting
 the checkout breaks the links.
 
 Codex, OpenCode, and Pi discover the shared Agent Skills location. Claude Code

@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""Read-only agent-browser report: client configs, browser, profile, output.
+
+Prints one `OK`, `WARN`, or `FAIL` line per fact, then one `READY` line per
+server. Exits 1 when any line is `FAIL`. Never reads cookie or session contents.
+"""
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+SERVERS = ("playwright", "playwright-auth", "safari-mcp")
+LAUNCHER = Path(__file__).resolve().with_name("agent-browser-mcp")
+HOME = Path.home()
+XDG_CONFIG = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config")
+failed = False
+
+
+def report(level, key, detail):
+    global failed
+    failed |= level == "FAIL"
+    print(f"{level} {key}: {detail}")
+
+
+def strip_jsonc(text):
+    # Drops // and /* */ comments outside strings, then trailing commas.
+    out, i, in_str = [], 0, False
+    while i < len(text):
+        c = text[i]
+        if in_str:
+            out.append(c)
+            if c == "\\":
+                out.append(text[i + 1 : i + 2])
+                i += 1
+            elif c == '"':
+                in_str = False
+        elif c == '"':
+            in_str = True
+            out.append(c)
+        elif text.startswith("//", i):
+            i = text.find("\n", i)
+            i = len(text) if i < 0 else i
+            continue
+        elif text.startswith("/*", i):
+            i = text.find("*/", i)
+            i = len(text) if i < 0 else i + 2
+            continue
+        else:
+            out.append(c)
+        i += 1
+    return re.sub(r",(\s*[}\]])", r"\1", "".join(out))
+
+
+def load_json(path, jsonc=False):
+    text = path.read_text()
+    return json.loads(strip_jsonc(text) if jsonc else text)
+
+
+def claude_servers():
+    path = HOME / ".claude.json"
+    return path, load_json(path).get("mcpServers", {})
+
+
+def codex_servers():
+    path = Path(os.environ.get("CODEX_HOME") or HOME / ".codex") / "config.toml"
+    try:
+        import tomllib
+    except ImportError:
+        # Python < 3.11: names only, from table headers.
+        names = re.findall(r'^\[mcp_servers\.("?)([\w-]+)\1\]', path.read_text(), re.M)
+        return path, {n: {} for _, n in names}
+    return path, tomllib.loads(path.read_text()).get("mcp_servers", {})
+
+
+def opencode_servers():
+    root = XDG_CONFIG / "opencode"
+    path = next((root / n for n in ("opencode.jsonc", "opencode.json") if (root / n).exists()),
+                root / "opencode.json")
+    mcp = load_json(path, jsonc=True).get("mcp", {})
+    # 2.x nests servers under "servers"; the flat 1.x form is still read.
+    servers = dict(mcp.get("servers", {}))
+    servers.update({k: v for k, v in mcp.items() if k not in ("servers", "timeout")})
+    return path, servers
+
+
+def pi_servers():
+    path = Path(os.environ.get("PI_CODING_AGENT_DIR") or HOME / ".pi" / "agent") / "mcp.json"
+    return path, load_json(path).get("mcpServers", {})
+
+
+def command_of(entry):
+    cmd = entry.get("command", [])
+    cmd = cmd if isinstance(cmd, list) else [cmd]
+    return [str(c) for c in cmd + list(entry.get("args", []))]
+
+
+def check_clients():
+    declared = {s: [] for s in SERVERS}
+    for client, loader in (("claude-code", claude_servers), ("codex", codex_servers),
+                           ("opencode", opencode_servers), ("pi", pi_servers)):
+        try:
+            path, servers = loader()
+        except FileNotFoundError as e:
+            report("WARN", f"client.{client}", f"no config at {e.filename}")
+            continue
+        except (ValueError, OSError) as e:
+            report("FAIL", f"client.{client}", f"unreadable config: {e}")
+            continue
+        for name in SERVERS:
+            entry = servers.get(name)
+            if entry is None:
+                report("WARN", f"client.{client}.{name}", f"not declared in {path}")
+                continue
+            if entry.get("enabled") is False or entry.get("disabled") is True:
+                report("WARN", f"client.{client}.{name}", "declared but disabled")
+                continue
+            cmd = " ".join(command_of(entry))
+            if name.startswith("playwright") and cmd and "agent-browser-mcp" not in cmd:
+                report("WARN", f"client.{client}.{name}", f"bypasses the launcher: {cmd}")
+            else:
+                report("OK", f"client.{client}.{name}", "declared")
+            declared[name].append(client)
+    return declared
+
+
+def launcher_config():
+    if not os.access(LAUNCHER, os.X_OK):
+        report("FAIL", "launcher", f"not executable: {LAUNCHER}")
+        return {}
+    out = subprocess.run([str(LAUNCHER), "--print-config"], capture_output=True, text=True)
+    if out.returncode:
+        report("FAIL", "launcher", out.stderr.strip() or "print-config failed")
+        return {}
+    report("OK", "launcher", str(LAUNCHER))
+    return dict(line.split("=", 1) for line in out.stdout.splitlines() if "=" in line)
+
+
+def check_browser(cfg):
+    config_file = Path(cfg.get("AGENT_BROWSER_CONFIG", ""))
+    report("OK" if config_file.is_file() else "WARN", "config",
+           str(config_file) if config_file.is_file() else f"none at {config_file}; defaults apply")
+    report("OK", "package", cfg.get("AGENT_BROWSER_PACKAGE", "?"))
+    for tool in ("node", "npx"):
+        found = shutil.which(tool)
+        report("OK" if found else "FAIL", tool, found or "not on PATH")
+    exe = cfg.get("AGENT_BROWSER_EXECUTABLE")
+    if exe:
+        if os.access(exe, os.X_OK):
+            ver = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=30)
+            report("OK", "browser", f"{exe} ({(ver.stdout or ver.stderr).strip()})")
+        else:
+            report("FAIL", "browser", f"not executable: {exe}")
+    else:
+        channel = cfg.get("AGENT_BROWSER_CHANNEL") or "chrome (Playwright default)"
+        report("OK", "browser", f"Playwright channel {channel}")
+
+
+def check_profile(cfg):
+    profile = Path(cfg.get("AGENT_BROWSER_PROFILE", ""))
+    if not profile.is_dir():
+        report("WARN", "profile", f"not created yet: {profile} (first playwright-auth run creates it)")
+        return
+    report("OK", "profile", str(profile))
+    cookies = profile / "Default" / "Cookies"
+    has_cookies = cookies.is_file() and cookies.stat().st_size > 0
+    report("OK" if has_cookies else "WARN", "profile.cookies",
+           "present" if has_cookies else "none yet; the user has not logged in with playwright-auth")
+    lock = profile / "SingletonLock"
+    if lock.is_symlink():
+        pid = os.readlink(lock).rsplit("-", 1)[-1]
+        try:
+            os.kill(int(pid), 0)
+            report("WARN", "profile.lock", f"in use by browser pid {pid}; one agent at a time")
+        except (ValueError, ProcessLookupError):
+            report("OK", "profile.lock", f"stale lock (pid {pid} not running)")
+        except PermissionError:
+            report("WARN", "profile.lock", f"in use by pid {pid} (another user)")
+    else:
+        report("OK", "profile.lock", "free")
+
+
+def check_output(cfg):
+    root = Path(cfg.get("AGENT_BROWSER_OUTPUT", ""))
+    for sub in ("playwright", "playwright-auth"):
+        report("OK", f"output.{sub}", str(root / sub))
+
+
+def check_safari():
+    driver = shutil.which("safaridriver") or "/usr/bin/safaridriver"
+    if sys.platform != "darwin" or not os.access(driver, os.X_OK):
+        report("WARN", "safari", "safaridriver not available (macOS with Safari 27+ only)")
+        return False
+    help_text = subprocess.run([driver, "--help"], capture_output=True, text=True).stdout
+    if "--mcp" not in help_text:
+        report("WARN", "safari", f"{driver} has no --mcp flag; Safari 27+ required")
+        return False
+    report("OK", "safari", f"{driver} --mcp; the remote-automation setting is only "
+           "verifiable by a session (tool error names it)")
+    return True
+
+
+def main():
+    declared = check_clients()
+    cfg = launcher_config()
+    if cfg:
+        check_browser(cfg)
+        check_profile(cfg)
+        check_output(cfg)
+    safari = check_safari()
+    for name in SERVERS:
+        ok = bool(declared[name]) and (bool(cfg) if name.startswith("playwright") else safari)
+        clients = ",".join(declared[name]) or "none"
+        print(f"READY {name}: {'yes' if ok else 'no'} (clients: {clients})")
+    sys.exit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()

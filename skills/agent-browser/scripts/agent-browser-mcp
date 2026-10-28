@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Starts Playwright MCP over stdio for MCP clients.
+#   agent-browser-mcp        isolated, headless, in-memory profile
+#   agent-browser-mcp auth   headed, persistent agent-only profile
+#   agent-browser-mcp --print-config   resolved settings, then exit
+set -euo pipefail
+
+usage() {
+  printf '%s\n' 'Usage: agent-browser-mcp [auth | --print-config] [extra Playwright MCP flags...]' >&2
+}
+
+MODE=isolated
+case ${1:-} in
+  auth) MODE=auth; shift ;;
+  --print-config) MODE=print; shift ;;
+  -h | --help) usage; exit 0 ;;
+esac
+
+if [[ $(uname -s) == "Darwin" ]]; then
+  DATA_ROOT="${HOME}/Library/Application Support/agent-browser"
+  CACHE_ROOT="${HOME}/Library/Caches/agent-browser"
+else
+  DATA_ROOT="${XDG_DATA_HOME:-${HOME}/.local/share}/agent-browser"
+  CACHE_ROOT="${XDG_CACHE_HOME:-${HOME}/.cache}/agent-browser"
+fi
+CONFIG_FILE="${AGENT_BROWSER_CONFIG:-${XDG_CONFIG_HOME:-${HOME}/.config}/agent-browser/config}"
+
+AGENT_BROWSER_PACKAGE="@playwright/mcp@latest"
+AGENT_BROWSER_EXECUTABLE=""
+AGENT_BROWSER_CHANNEL=""
+AGENT_BROWSER_PROFILE="${DATA_ROOT}/profiles/ai-agent"
+AGENT_BROWSER_OUTPUT="${CACHE_ROOT}"
+
+# KEY=VALUE lines for known keys only; the file is parsed, never sourced.
+if [[ -f "${CONFIG_FILE}" ]]; then
+  while IFS='=' read -r key value; do
+    [[ ${key} =~ ^[[:space:]]*(#|$) ]] && continue
+    value=${value%\"}
+    value=${value#\"}
+    value=${value/#\~/${HOME}}
+    case "${key}" in
+      AGENT_BROWSER_PACKAGE | AGENT_BROWSER_EXECUTABLE | AGENT_BROWSER_CHANNEL | \
+        AGENT_BROWSER_PROFILE | AGENT_BROWSER_OUTPUT)
+        printf -v "${key}" '%s' "${value}"
+        ;;
+      *) printf 'agent-browser-mcp: ignoring unknown key %s in %s\n' "${key}" "${CONFIG_FILE}" >&2 ;;
+    esac
+  done < "${CONFIG_FILE}"
+fi
+
+if [[ ${MODE} == "print" ]]; then
+  printf '%s=%s\n' \
+    AGENT_BROWSER_CONFIG "${CONFIG_FILE}" \
+    AGENT_BROWSER_PACKAGE "${AGENT_BROWSER_PACKAGE}" \
+    AGENT_BROWSER_EXECUTABLE "${AGENT_BROWSER_EXECUTABLE}" \
+    AGENT_BROWSER_CHANNEL "${AGENT_BROWSER_CHANNEL}" \
+    AGENT_BROWSER_PROFILE "${AGENT_BROWSER_PROFILE}" \
+    AGENT_BROWSER_OUTPUT "${AGENT_BROWSER_OUTPUT}"
+  exit 0
+fi
+
+ARGS=(-y "${AGENT_BROWSER_PACKAGE}")
+if [[ -n "${AGENT_BROWSER_EXECUTABLE}" ]]; then
+  [[ -x "${AGENT_BROWSER_EXECUTABLE}" ]] || {
+    printf 'agent-browser-mcp: browser not executable: %s\n' "${AGENT_BROWSER_EXECUTABLE}" >&2
+    exit 1
+  }
+  ARGS+=(--executable-path "${AGENT_BROWSER_EXECUTABLE}")
+elif [[ -n "${AGENT_BROWSER_CHANNEL}" ]]; then
+  ARGS+=(--browser "${AGENT_BROWSER_CHANNEL}")
+fi
+
+# Logged-in output stays apart from isolated output, and both stay private.
+umask 077
+if [[ ${MODE} == "auth" ]]; then
+  mkdir -p "${AGENT_BROWSER_PROFILE}" "${AGENT_BROWSER_OUTPUT}/playwright-auth"
+  ARGS+=(--user-data-dir "${AGENT_BROWSER_PROFILE}" --output-dir "${AGENT_BROWSER_OUTPUT}/playwright-auth")
+else
+  mkdir -p "${AGENT_BROWSER_OUTPUT}/playwright"
+  ARGS+=(--isolated --headless --output-dir "${AGENT_BROWSER_OUTPUT}/playwright")
+fi
+
+exec npx "${ARGS[@]}" "$@"

@@ -16,6 +16,9 @@ instructions.
 - **`project-presentation`** audits, bootstraps, or aligns a repository's
   brand identity and public documentation. It inspects the repository first
   and asks only about missing or conflicting choices.
+- **`agent-browser`** gives agents an agent-only browser through Playwright
+  and Safari MCP servers, with a separate signed-in profile for sites that
+  need the user's login and a read-only readiness check.
 
 Each skill works with Claude Code, Codex, OpenCode, and Pi, because it follows
 the open Agent Skills `SKILL.md` format.
