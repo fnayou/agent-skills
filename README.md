@@ -32,6 +32,18 @@ offline site checker, and GitHub Pages deployment through Actions. Each track
 works without the other. The skill carries starter templates and inspects the
 repository first, asking only about missing or conflicting choices.
 
+### `agent-browser`
+
+Gives agents a browser that is never the user's own, through three MCP
+servers: `playwright` (headless, in-memory profile), `playwright-auth`
+(headed, persistent agent-only profile for sites the user signs in to), and
+`safari-mcp` (Safari's built-in MCP server for compatibility checks). One
+launcher holds the package pin and browser binary for every client, and a
+read-only check reports which clients declare each server and whether the
+browser, profile, and output directories are ready. Client setup for Claude
+Code, Codex, OpenCode, and Pi is in
+[`skills/agent-browser/references/setup.md`](skills/agent-browser/references/setup.md).
+
 ## Install
 
 Review the repository before installing it. The installer creates two
@@ -51,7 +63,7 @@ The links are:
 ~/.claude/skills/<skill>  -> <checkout>/skills/<skill>
 ```
 
-`<skill>` is `worktree-lanes` and `project-presentation`.
+`<skill>` is `worktree-lanes`, `project-presentation`, and `agent-browser`.
 
 Codex, OpenCode, and Pi discover the shared Agent Skills location. Claude Code
 uses its compatible personal-skills location. Both links resolve to the same
@@ -86,7 +98,7 @@ Phase 1 - inspect and explain.
 1. Ask me for the full final path of the checkout. You may suggest a
    persistent path, but I decide. Never use a temporary location.
 2. List the skills under skills/ in the repository (currently
-   worktree-lanes and project-presentation). Work out the two link roots,
+   worktree-lanes, project-presentation, and agent-browser). Work out the two link roots,
    each on its own, because one variable may be set while the other is not:
    - $AGENT_SKILLS_TARGET if AGENT_SKILLS_TARGET is set and non-empty,
      otherwise ~/.agents/skills

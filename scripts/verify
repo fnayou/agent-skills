@@ -172,4 +172,42 @@ if "${DOCS_PY[@]}" "${DOCS_ROOT}/site" >/dev/null 2>&1; then
   fail "documentation check accepted a broken site"
 fi
 
-printf '%s\n' 'PASS: skills, installer, and brand and documentation starters verified'
+BROWSER_SKILL="${SKILLS_ROOT}/agent-browser"
+BROWSER_FILE="${BROWSER_SKILL}/SKILL.md"
+LAUNCHER="${BROWSER_SKILL}/scripts/agent-browser-mcp"
+BROWSER_CHECK="${BROWSER_SKILL}/scripts/check"
+grep -q 'references/setup.md' "${BROWSER_FILE}" || fail "agent-browser setup is not discoverable"
+grep -q 'scripts/check' "${BROWSER_FILE}" || fail "agent-browser check is not discoverable"
+[[ -x "${LAUNCHER}" && -x "${BROWSER_CHECK}" ]] || fail "agent-browser scripts are not executable"
+bash -n "${LAUNCHER}"
+"${PYTHON:-python3}" -I -c 'import ast, sys; ast.parse(open(sys.argv[1]).read())' "${BROWSER_CHECK}" || \
+  fail "agent-browser check does not parse"
+
+# Exercise the launcher and the check against a fake home.
+BROWSER_HOME="${VERIFY_ROOT}/browser-home"
+mkdir -p "${BROWSER_HOME}/.config/agent-browser" "${BROWSER_HOME}/.pi/agent"
+# The command substitution is literal on purpose: the launcher must not run it.
+# shellcheck disable=SC2016
+printf '%s\n' '# comment' 'AGENT_BROWSER_PACKAGE=@playwright/mcp@0.0.0' \
+  'AGENT_BROWSER_PROFILE="~/agent-profile"' 'AGENT_BROWSER_OUTPUT=$(touch pwned)' 'UNKNOWN_KEY=x' \
+  > "${BROWSER_HOME}/.config/agent-browser/config"
+BROWSER_ENV=(env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME -u CODEX_HOME \
+  -u PI_CODING_AGENT_DIR -u AGENT_BROWSER_CONFIG HOME="${BROWSER_HOME}")
+printed=$(cd "${BROWSER_HOME}" && "${BROWSER_ENV[@]}" "${LAUNCHER}" --print-config 2>/dev/null)
+grep -qx 'AGENT_BROWSER_PACKAGE=@playwright/mcp@0.0.0' <<<"${printed}" || fail "launcher ignored the package pin"
+grep -qx "AGENT_BROWSER_PROFILE=${BROWSER_HOME}/agent-profile" <<<"${printed}" || fail "launcher did not expand ~"
+[[ ! -e "${BROWSER_HOME}/pwned" ]] || fail "launcher executed a config value"
+
+printf '%s\n' '{"mcpServers":{"playwright":{"command":"/x/agent-browser-mcp"},"playwright-auth":{"command":"npx","args":["@playwright/mcp"]}}}' \
+  > "${BROWSER_HOME}/.pi/agent/mcp.json"
+mkdir -p "${BROWSER_HOME}/agent-profile"
+ln -s 'host-999999999' "${BROWSER_HOME}/agent-profile/SingletonLock"
+report=$("${BROWSER_ENV[@]}" "${PYTHON:-python3}" -I "${BROWSER_CHECK}" || true)
+grep -q '^OK client.pi.playwright: declared$' <<<"${report}" || fail "check missed a declared server"
+grep -q '^WARN client.pi.playwright-auth: bypasses the launcher' <<<"${report}" || \
+  fail "check missed a server that bypasses the launcher"
+grep -q '^WARN client.claude-code: no config' <<<"${report}" || fail "check missed an absent client config"
+grep -q '^OK profile.lock: stale lock' <<<"${report}" || fail "check misread a stale profile lock"
+grep -q '^READY playwright: yes (clients: pi)$' <<<"${report}" || fail "check readiness is wrong"
+
+printf '%s\n' 'PASS: skills, installer, agent browser, and brand and documentation starters verified'

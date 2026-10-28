@@ -28,3 +28,23 @@ independent tracks.
   and GitHub Pages deployment through GitHub Actions.
 
 This site and its artwork are produced with the skill itself.
+
+## agent-browser
+
+Gives agents a browser that is never the user's own. The skill picks the
+narrowest of three MCP servers:
+
+- **`playwright`:** headless, with an in-memory profile that disappears when
+  the browser closes. The default, and safe for many agents at once.
+- **`playwright-auth`:** a visible browser on a persistent, agent-only
+  profile, for sites the user signs in to. The user types credentials in the
+  browser window, one agent uses it at a time, and the agent confirms before
+  any irreversible action.
+- **`safari-mcp`:** Safari's built-in MCP server, for Safari compatibility
+  checks.
+
+A single launcher holds the package pin and browser binary for every client.
+A read-only check reports which clients declare each server and whether the
+browser, profile, and output directories are ready. The
+[setup reference](https://github.com/fnayou/agent-skills/blob/main/skills/agent-browser/references/setup.md)
+covers Claude Code, Codex, OpenCode, and Pi.
