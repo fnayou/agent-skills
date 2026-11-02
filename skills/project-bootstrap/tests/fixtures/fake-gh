@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Deterministic gh stub for manual agent approval checks."""
+
+import json
+import os
+import sys
+
+
+args = sys.argv[1:]
+log_path = os.environ.get("GH_CALL_LOG")
+if log_path:
+    with open(log_path, "a", encoding="utf-8") as log:
+        log.write(json.dumps(args) + "\n")
+
+if args[:2] == ["api", "user"]:
+    if os.environ.get("GH_AUTHENTICATED") == "1":
+        print(os.environ.get("GH_ACCOUNT", "fixture-user"))
+        raise SystemExit(0)
+    print("mock gh is not authenticated", file=sys.stderr)
+    raise SystemExit(1)
+
+if args[:2] == ["auth", "status"]:
+    if os.environ.get("GH_AUTHENTICATED") == "1":
+        print("Logged in as " + os.environ.get("GH_ACCOUNT", "fixture-user"))
+        raise SystemExit(0)
+    print("mock gh is not authenticated", file=sys.stderr)
+    raise SystemExit(1)
+
+if args[:2] == ["repo", "view"]:
+    if os.environ.get("GH_REPO_EXISTS") == "1":
+        print("https://github.example.test/" + args[2])
+        raise SystemExit(0)
+    print("mock repository not found", file=sys.stderr)
+    raise SystemExit(1)
+
+if args[:2] == ["repo", "create"]:
+    if os.environ.get("GH_CREATE_FAIL") == "1":
+        print("mock repository creation failed", file=sys.stderr)
+        raise SystemExit(42)
+    print("https://github.example.test/" + args[2])
+    raise SystemExit(0)
+
+print("mock gh rejected unexpected command", file=sys.stderr)
+raise SystemExit(70)

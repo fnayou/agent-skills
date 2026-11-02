@@ -14,12 +14,12 @@ tasks:
   brand:generate:
     desc: Generate brand assets
     cmds:
-      - python scripts/brand_generate.py --generate
+      - python3 scripts/brand_generate.py --generate
 
   brand:check:
     desc: Check brand assets are current
     cmds:
-      - python scripts/brand_generate.py --check
+      - python3 scripts/brand_generate.py --check
 
   docs:assets:
     desc: Copy generated brand assets into the site
@@ -37,4 +37,4 @@ tasks:
     desc: Build the public site and check it
     cmds:
       - task: docs:build
-      - python scripts/check_docs.py site --base-path /agent-skills/ --palette brand/data/brand.json --require-og-image
+      - python3 scripts/check_docs.py site --base-path /agent-skills/ --palette brand/data/brand.json --require-og-image

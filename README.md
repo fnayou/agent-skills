@@ -44,6 +44,13 @@ browser, profile, and output directories are ready. Client setup for Claude
 Code, Codex, OpenCode, and Pi is in
 [`skills/agent-browser/references/setup.md`](skills/agent-browser/references/setup.md).
 
+### `project-bootstrap`
+
+Creates, adopts, or audits a project's engineering foundation with guarded
+file generation, GitHub governance templates, and an opt-in Taskfile/Docker
+workflow. Audit is read-only; publishing and Git writes require separate
+approval. See [`skills/project-bootstrap/SKILL.md`](skills/project-bootstrap/SKILL.md).
+
 ## Install
 
 Review the repository before installing it. The installer creates two
@@ -63,7 +70,7 @@ The links are:
 ~/.claude/skills/<skill>  -> <checkout>/skills/<skill>
 ```
 
-`<skill>` is `worktree-lanes`, `project-presentation`, and `agent-browser`.
+`<skill>` is each directory under `skills/` with a `SKILL.md` entrypoint.
 
 Codex, OpenCode, and Pi discover the shared Agent Skills location. Claude Code
 uses its compatible personal-skills location. Both links resolve to the same
@@ -97,8 +104,7 @@ links.
 Phase 1 - inspect and explain.
 1. Ask me for the full final path of the checkout. You may suggest a
    persistent path, but I decide. Never use a temporary location.
-2. List the skills under skills/ in the repository (currently
-   worktree-lanes, project-presentation, and agent-browser). Work out the two link roots,
+2. List each skill under skills/ that has a SKILL.md entrypoint. Work out the two link roots,
    each on its own, because one variable may be set while the other is not:
    - $AGENT_SKILLS_TARGET if AGENT_SKILLS_TARGET is set and non-empty,
      otherwise ~/.agents/skills

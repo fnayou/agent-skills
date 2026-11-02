@@ -19,11 +19,15 @@ instructions.
 - **`agent-browser`** gives agents an agent-only browser through Playwright
   and Safari MCP servers, with a separate signed-in profile for sites that
   need the user's login and a read-only readiness check.
+- **`project-bootstrap`** creates, adopts, or audits an AI-ready project
+  foundation with guarded file generation, GitHub governance templates, and
+  opt-in Taskfile/Docker conventions.
 
-Each skill works with Claude Code, Codex, OpenCode, and Pi, because it follows
-the open Agent Skills `SKILL.md` format.
+Each skill follows the open Agent Skills `SKILL.md` format. Transferable
+guidance works across Claude Code, Codex, OpenCode, and Pi where each host
+supports the relevant discovery and invocation behavior.
 
 ## Where to go next
 
 - [Getting Started](getting-started.md) installs the skills from a checkout.
-- Skills: [worktree-lanes](skills/worktree-lanes.md), [project-presentation](skills/project-presentation.md), and [agent-browser](skills/agent-browser.md) each have their own page.
+- Skills: [worktree-lanes](skills/worktree-lanes.md), [project-presentation](skills/project-presentation.md), [agent-browser](skills/agent-browser.md), and [project-bootstrap](skills/project-bootstrap.md) each have their own page.
