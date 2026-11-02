@@ -210,4 +210,14 @@ grep -q '^WARN client.claude-code: no config' <<<"${report}" || fail "check miss
 grep -q '^OK profile.lock: stale lock' <<<"${report}" || fail "check misread a stale profile lock"
 grep -q '^READY playwright: yes (clients: pi)$' <<<"${report}" || fail "check readiness is wrong"
 
-printf '%s\n' 'PASS: skills, installer, agent browser, and brand and documentation starters verified'
+BOOTSTRAP_SKILL="${SKILLS_ROOT}/project-bootstrap"
+[[ -f "${BOOTSTRAP_SKILL}/scripts/inspect.py" ]] || fail "project-bootstrap inspector is missing"
+[[ -f "${BOOTSTRAP_SKILL}/scripts/scaffold.py" ]] || fail "project-bootstrap scaffold is missing"
+[[ -f "${BOOTSTRAP_SKILL}/scripts/validate.py" ]] || fail "project-bootstrap validator is missing"
+python3 -B -I -m unittest discover -s "${BOOTSTRAP_SKILL}/tests" -v || fail "project-bootstrap tests failed"
+python3 -I -c 'import ast, sys; [ast.parse(open(path).read()) for path in sys.argv[1:]]' \
+  "${BOOTSTRAP_SKILL}/scripts/inspect.py" \
+  "${BOOTSTRAP_SKILL}/scripts/scaffold.py" \
+  "${BOOTSTRAP_SKILL}/scripts/validate.py" || fail "project-bootstrap scripts do not parse"
+
+printf '%s\n' 'PASS: skills, installer, agent browser, project-bootstrap, and brand and documentation starters verified'

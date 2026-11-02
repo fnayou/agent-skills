@@ -13,6 +13,7 @@ nav = [
         { "worktree-lanes" = "skills/worktree-lanes.md" },
         { "project-presentation" = "skills/project-presentation.md" },
         { "agent-browser" = "skills/agent-browser.md" },
+        { "project-bootstrap" = "skills/project-bootstrap.md" },
     ] },
 ]
 
