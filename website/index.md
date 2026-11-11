@@ -22,6 +22,9 @@ instructions.
 - **`project-bootstrap`** creates, adopts, or audits an AI-ready project
   foundation with guarded file generation, GitHub governance templates, and
   opt-in Taskfile/Docker conventions.
+- **`herdr-workers`** runs the session as a foreman for an explicitly
+  delegated task: it plans, briefs, and verifies while worker agents execute
+  in visible herdr panes, with guard rails on who answers each dialog.
 
 Each skill follows the open Agent Skills `SKILL.md` format. Transferable
 guidance works across Claude Code, Codex, OpenCode, and Pi where each host
@@ -30,4 +33,4 @@ supports the relevant discovery and invocation behavior.
 ## Where to go next
 
 - [Getting Started](getting-started.md) installs the skills from a checkout.
-- Skills: [worktree-lanes](skills/worktree-lanes.md), [project-presentation](skills/project-presentation.md), [agent-browser](skills/agent-browser.md), and [project-bootstrap](skills/project-bootstrap.md) each have their own page.
+- Skills: [worktree-lanes](skills/worktree-lanes.md), [project-presentation](skills/project-presentation.md), [agent-browser](skills/agent-browser.md), [project-bootstrap](skills/project-bootstrap.md), and [herdr-workers](skills/herdr-workers.md) each have their own page.

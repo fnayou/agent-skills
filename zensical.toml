@@ -14,6 +14,7 @@ nav = [
         { "project-presentation" = "skills/project-presentation.md" },
         { "agent-browser" = "skills/agent-browser.md" },
         { "project-bootstrap" = "skills/project-bootstrap.md" },
+        { "herdr-workers" = "skills/herdr-workers.md" },
     ] },
 ]
 

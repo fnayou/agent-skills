@@ -12,9 +12,12 @@ soon as the maintainer can review it.
 
 ## Scope
 
-This repository holds skill instructions and two shell scripts,
-`scripts/install` and `scripts/verify`. Reports about the installer (for
-example unsafe symlink handling) or about instructions that would lead an
-agent to a destructive action are in scope.
+This repository holds skill instructions, the helper scripts and tests that
+ship inside skills, and two repository scripts, `scripts/install` and
+`scripts/verify`. Reports about the installer (for example unsafe symlink
+handling), about a skill's scripts, or about instructions that would lead an
+agent to a destructive action are in scope. For `herdr-workers`, that includes
+guidance that would let a foreman or a worker take an action the guard rails
+reserve for the operator.
 
 Only the latest commit on `main` is supported.

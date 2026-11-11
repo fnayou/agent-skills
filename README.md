@@ -51,6 +51,33 @@ file generation, GitHub governance templates, and an opt-in Taskfile/Docker
 workflow. Audit is read-only; publishing and Git writes require separate
 approval. See [`skills/project-bootstrap/SKILL.md`](skills/project-bootstrap/SKILL.md).
 
+### `herdr-workers`
+
+Runs the session as a foreman for a task the operator delegates explicitly:
+it plans, writes the brief, and verifies, while worker agents execute in
+herdr panes the operator can watch. The foreman changes nothing itself. Work that can be written as exact steps goes to pi on a local model;
+work that needs investigation goes to a paid worker, which may draft the steps
+for pi.
+
+- **Requires** herdr, with the foreman session running inside a herdr pane:
+  the skill checks `HERDR_ENV=1` and, when it is unset, says so and works the
+  normal way. Built against herdr 0.9.3.
+- **Foreman:** Claude Code is the reference foreman. Another harness runs as
+  an unprofiled foreman and says so in its first message.
+- **Worker kinds** with a profile: `pi`, `claude`, `opencode`, and `codex`.
+  Any other kind herdr starts is handled as an unprofiled kind, with every
+  dialog left to the operator.
+- **Optional files** in `~/.config/herdr-workers/`, copied from the templates
+  in the skill: `machine.md` (machine facts: local model, output-condensing
+  hooks, the shell tool's time limit), `operator-rules.md` (the operator's own
+  rules for workers), and `run-log.md` (one row per run). Without them the
+  skill carries on with the worker rules only and records nothing.
+
+Ask for it by name: "use pi workers", "herdr workers", "a worker pane", or
+"delegate this through herdr". The vocabulary is in
+[`skills/herdr-workers/references/terminology.md`](skills/herdr-workers/references/terminology.md),
+and its decisions are in `docs/adr/herdr-workers-*.md`.
+
 ## Install
 
 Review the repository before installing it. The installer creates two
@@ -75,6 +102,24 @@ The links are:
 Codex, OpenCode, and Pi discover the shared Agent Skills location. Claude Code
 uses its compatible personal-skills location. Both links resolve to the same
 source, so the skill cannot drift between agents.
+
+### Per-skill matrix
+
+What the installer links for each harness, and what each skill needs beyond
+the link. "Not tested" means nothing in this repository records a run of that
+skill in that harness.
+
+| Skill | Claude Code | Codex | OpenCode | Pi |
+|---|---|---|---|---|
+| *every skill: link* | `~/.claude/skills/<skill>` | `~/.agents/skills/<skill>` | `~/.agents/skills/<skill>` | `~/.agents/skills/<skill>` |
+| `worktree-lanes` | Nothing else documented. | Nothing else documented. | Nothing else documented. | Nothing else documented. |
+| `project-presentation` | `python3`; `rsvg-convert` for raster brand assets; the packages in `requirements-docs.txt` (Zensical) for the documentation track. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
+| `agent-browser` | `claude mcp add -s user` for `playwright`, `playwright-auth`, and `safari-mcp`. | `[mcp_servers.*]` entries in `${CODEX_HOME:-~/.codex}/config.toml`. | `mcp.servers` entries in `~/.config/opencode/opencode.jsonc` (OpenCode 2.x). | `mcpServers` entries in `${PI_CODING_AGENT_DIR:-~/.pi/agent}/mcp.json`. |
+| `project-bootstrap` | `python3`; an authenticated `gh` for any GitHub work; the Matt Pocock setup skill for Create and Adopt. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
+| `herdr-workers` | herdr, with the session inside a herdr pane (`HERDR_ENV=1`); at least one worker agent herdr can start; optional files in `~/.config/herdr-workers/`. The reference foreman. | Same needs as Claude Code. Restart codex after linking: an open session does not see a new skill. Runs as an unprofiled foreman. | Same needs as Claude Code. Runs as an unprofiled foreman. | Not tested as a foreman. |
+
+`agent-browser` client entries are spelled out in
+[`skills/agent-browser/references/setup.md`](skills/agent-browser/references/setup.md).
 
 The target roots can be overridden for testing:
 
@@ -169,8 +214,34 @@ repository instructions and expose safe ownership checks and claim commands.
 ./scripts/verify
 ```
 
-Verification checks the portable skill structure and exercises installation
-and repeat installation in an isolated temporary directory.
+Verification runs offline and never changes links in your home directory. It
+checks:
+
+- every skill: `SKILL.md` frontmatter, a name that matches its directory, a
+  description, no machine-specific `/Users/` path, and relative links in
+  `SKILL.md` and `references/*.md` that resolve;
+- `worktree-lanes`: its terminology and manager-workspace references and their
+  required terms and sections;
+- `scripts/install` and `scripts/verify` parse; installation, `--check`, link
+  targets, refusal to replace an existing path or a different symlink, and
+  all-or-nothing behavior across both targets, in an isolated temporary
+  directory;
+- `project-presentation` starters: the brand generator passes on fresh output
+  and fails on stale output; the documentation checker accepts a valid site,
+  requires `og:image` when asked, and rejects a broken site;
+- `agent-browser`: its scripts are linked, executable and parse; the launcher
+  reads its config without executing a value; the check reports declared
+  servers, a bypassed launcher, a missing client config, and a stale profile
+  lock;
+- `project-bootstrap`: its unit tests pass and its scripts parse;
+- `herdr-workers`: the files `SKILL.md` links to exist, its terminology
+  exists, every Python file under `tests/` compiles, and the scenario fixture
+  builds and passes its own check (`RESULT 00-fixture PASS`).
+
+CI also runs ShellCheck on `scripts/` and `skills-ref validate` on each skill.
+The scenario runs of `herdr-workers` need herdr and live agents; they are not
+part of verification: see
+[`skills/herdr-workers/tests/README.md`](skills/herdr-workers/tests/README.md).
 
 ## License
 
