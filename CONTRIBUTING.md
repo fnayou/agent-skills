@@ -13,8 +13,10 @@ held to a few strict rules. Read [`AGENTS.md`](AGENTS.md) first.
 - Keep project-specific commands, credentials, infrastructure identifiers, and
   local absolute paths out of skills.
 - Define each shared term once. Worktree vocabulary lives in
-  [`skills/worktree-lanes/references/terminology.md`](skills/worktree-lanes/references/terminology.md);
-  extend it rather than creating a parallel definition.
+  [`skills/worktree-lanes/references/terminology.md`](skills/worktree-lanes/references/terminology.md),
+  and the vocabulary of delegation to herdr workers in
+  [`skills/herdr-workers/references/terminology.md`](skills/herdr-workers/references/terminology.md);
+  extend the owning file rather than creating a parallel definition.
 
 ## Making a change
 

@@ -1,0 +1,11 @@
+# Parallel workers
+
+Read this before running more than one worker at a time.
+
+- **One worktree per parallel worker.** A worktree is repository state, so a worker creates it: one pi run with a literal brief sets up all of them, before the parallel runs start. Its lines are the project's worktree command when it has one (see the loop's rule in `SKILL.md`), and `git worktree add -b <branch> <dir> <base>` otherwise. Then split each pane with `--cwd <dir>`: a worker for a worktree starts in that worktree. Do not start it in another checkout with `--add-dir` to get around a dialog: the other checkout stays writable for it, and the dialog is the operator's. Gitignored files (local config, secrets) are absent in a worktree; say so in the brief when the task would need them.
+- **A worktree skill comes first.** When a skill that coordinates worktrees is also active, such as `worktree-lanes`, its account of the worktrees comes before your plan, and its rules govern shared resources and the removal of a worktree. This file only says how to run workers in them; name the worktree in every brief.
+- **Count the trust dialogs in your plan.** A claude or a codex worker started in a new worktree can raise one, and it is the operator's; pi and opencode raise none. Tell the operator the number before the first spawn. For a worktree task whose brief can be literal, prefer a kind that raises none.
+- **Run in parallel by prompting without `--wait`**, then poll `herdr agent list` every few seconds and act on whichever worker leaves `working` first. Let a few seconds pass after a prompt before trusting a status: a worker still reads `idle` for a moment after it was prompted.
+- **Order of attention:** a worker at a dialog first (it is burning wall-clock on you), then a finished one (verify, report its run), then keep polling the rest.
+- **Dialogs add up** across workers. Before a larger run, confirm the guard rails with the operator and agree what happens to the result (PR, local branch, or thrown away).
+- **Verify a worktree from where you are**, with `git -C <dir>`, absolute paths, and `/bin/sh -c 'cd <dir> && <command>'` for a test run. A bare `cd` into a worktree is what hung verification commands in earlier runs.

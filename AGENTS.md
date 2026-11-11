@@ -12,7 +12,10 @@ across coding-agent harnesses.
   local absolute paths out of global skills.
 - Define each shared term once. For worktree coordination, the canonical
   definitions are in
-  `skills/worktree-lanes/references/terminology.md`.
+  `skills/worktree-lanes/references/terminology.md`. For delegation to
+  workers in herdr panes (foreman, worker, kind, profile, brief, run, dialog,
+  allowlist), they are in `skills/herdr-workers/references/terminology.md`,
+  which links to the worktree-lanes terms instead of redefining them.
 - Do not install skills or create links in a user's home directory without
   explicit approval for that installation.
 - Run `./scripts/verify` before committing.
@@ -37,4 +40,4 @@ Default five-role vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `
 
 ### Domain docs
 
-Single-context: one root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: one root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain.md`. An ADR that belongs to one skill carries the skill's name as a prefix, as in `docs/adr/herdr-workers-0001-foreman-never-implements.md`.
