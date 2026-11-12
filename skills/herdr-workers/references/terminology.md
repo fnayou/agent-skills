@@ -10,14 +10,16 @@ Decisions that are hard to reverse are recorded in the repository's
 | Preferred term | Definition | Avoid as a synonym |
 |---|---|---|
 | **foreman** | The session that plans the work, writes the brief and verifies the result. It reads but never changes state itself: every change goes through a worker. Claude Code by default; another agent that takes the role is an unprofiled foreman until it has a foreman profile. | orchestrator, main agent, lead |
-| **worker** | An agent in a herdr pane, visible to the operator while it runs, that executes what the foreman briefed. A worker never starts workers of its own. | subagent, child |
-| **kind** | The agent program a worker runs, as herdr names it: pi, claude, codex, opencode and others. | agent type, tool |
+| **worker** | An agent in a pane of the multiplexer, visible to the operator while it runs, that executes what the foreman briefed. A worker never starts workers of its own. | subagent, child |
+| **kind** | The agent program a worker runs: pi, claude, codex, opencode and others. | agent type, tool |
 | **profile** | The observed facts about one kind that a foreman needs to run it as a worker: how it starts, how it asks for approval, how it is restricted, which instruction files it loads. A profile holds only what a test run showed. | adapter, driver, config |
-| **unprofiled kind** | A kind herdr can start but for which no profile exists yet. Its workers get the most conservative handling. | |
+| **unprofiled kind** | A kind the multiplexer can start but for which no profile exists yet. Its workers get the most conservative handling. | |
 | **mode** | The restriction a worker is started under, which bounds what it can do whatever its brief says: a tool set for pi, a permission mode for claude, a sandbox for codex. The foreman picks the least capable mode that can execute the brief. | permission level, sandbox (as the general word) |
 | **brief** | The complete instructions a foreman sends to a worker, and the whole of what that worker knows about the task. | prompt, task description |
 | **literal brief** | A brief made of numbered steps with exact commands and edits, each followed by the output to expect. Any worker kind can receive one. | instruction-led, light worker, pi brief |
 | **goal brief** | A brief that states a goal, its context, what to leave alone and the shape of the report, and leaves the steps to the worker. Any worker kind on a capable model can receive one. | goal-led, heavy worker, claude brief |
+| **multiplexer** | The terminal multiplexer the foreman's session runs in, through which it opens panes and drives workers: herdr. | terminal |
+| **multiplexer file** | The file of one multiplexer under `multiplexers/`, holding the commands each step of the loop uses there. The loop itself is the same for every multiplexer. | adapter, driver |
 | **run** | One brief executed by one worker, from its start to its verified end. It is the unit the foreman reports on; a pane may host several runs in turn. | task, job, session |
 | **worker rules** | The discipline every worker follows whatever its task, shipped with the skill and loaded when the worker starts, so that a brief carries only the task. | system prompt, standing instructions |
 | **operator rules** | The operator's own standing rules, which rank above worker rules and above any brief. They are the operator's property and live outside the skill. | global instructions, user rules |
@@ -32,7 +34,7 @@ Decisions that are hard to reverse are recorded in the repository's
 
 ## Terms owned elsewhere
 
-This skill uses herdr's workspaces, tabs and panes, and Git worktrees. Those
+This skill uses the multiplexer's workspaces, tabs and panes, and Git worktrees. Those
 terms are defined once, in the worktree-lanes vocabulary:
 [`../../worktree-lanes/references/terminology.md`](../../worktree-lanes/references/terminology.md).
 This file does not define them again.
