@@ -6,17 +6,17 @@ Setup, the foreman's start and the checks are scripts. What the workers do is no
 
 ## Run a scenario with the driver
 
-From a session inside herdr, at the root of the agent-skills repository, with the branch under test checked out:
+From a session inside herdr or Rex, at the root of the agent-skills repository, with the branch under test checked out:
 
 ```bash
 python3 skills/herdr-workers/tests/run_scenario.py 01-pi-literal /tmp/hw-fixture-01
 ```
 
-The fixture directory must not exist yet. The driver builds the fixture, opens a herdr pane in it, starts a fresh Claude Code foreman there, answers the trust dialog of that new directory, sends the prompt of the scenario file, and waits until the foreman and all its workers are done. Then it prints:
+The fixture directory must not exist yet. The driver builds the fixture, opens a pane in it, starts a fresh Claude Code foreman there, answers the trust dialog of that new directory, sends the prompt of the scenario file, and waits until the foreman and all its workers are done. Then it prints:
 
 - the last screen of the foreman, with its report;
 - the check result, `RESULT <scenario-id> PASS n/n`;
-- per session file: paid tokens, the number of tool calls, the `herdr agent start` commands, the size of each brief, and what the foreman changed itself (`FOREMAN_CHANGES`, which must be 0).
+- per session file: paid tokens, the number of tool calls, the worker start commands, the size of each brief, and what the foreman changed itself (`FOREMAN_CHANGES`, which must be 0).
 
 A scenario in which the foreman first asks the operator something runs in two halves:
 
@@ -27,6 +27,12 @@ python3 skills/herdr-workers/tests/run_scenario.py 11-unprofiled-kind /tmp/hw-fi
 ```
 
 `--kind` fills `<KIND>` in a prompt that names no kind of its own.
+
+The driver runs the foreman in the multiplexer it is started from: herdr when `HERDR_ENV=1`, otherwise Rex when `REX_SESSION` is set; `--multiplexer herdr|rex` chooses. Under Rex:
+
+- the foreman's pane is split beside the driver's own pane, and the prompt reaches `claude` as its start argument;
+- the word `herdr` in a prompt becomes `Rex`, as an operator inside Rex would say it;
+- Rex's start-up hook asks the foreman to rename the session; the driver puts the session's label back after the run and prints `SESSION_RENAMED` when it had to.
 
 Start `finish` only after the foreman's first question has been answered. A question asked in plain text at the end of a turn looks to the driver like a finished foreman, and `finish` then closes its pane. A dialog the foreman has reported as `WAITING FOR OPERATOR` keeps the driver waiting until the foreman's summary follows.
 
@@ -51,7 +57,7 @@ Things that have cost a run:
 
    The second command must end with `RESULT 00-fixture PASS 7/7`.
 
-2. Open a new herdr pane in the fixture directory and start a fresh Claude Code session there. A session that has already read the scenario files or worked on the skill is not fresh.
+2. Open a new pane in the fixture directory and start a fresh Claude Code session there. A session that has already read the scenario files or worked on the skill is not fresh.
 
 3. Paste the prompt from the scenario file, with `<FIXTURE>` replaced by the fixture path. Answer the dialogs the scenario says are yours, the way it says.
 

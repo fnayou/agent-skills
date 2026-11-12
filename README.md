@@ -240,7 +240,7 @@ checks:
   builds and passes its own check (`RESULT 00-fixture PASS`).
 
 CI also runs ShellCheck on `scripts/` and `skills-ref validate` on each skill.
-The scenario runs of `herdr-workers` need herdr and live agents (the driver does not drive Rex yet); they are not
+The scenario runs of `herdr-workers` need herdr or Rex and live agents; they are not
 part of verification: see
 [`skills/herdr-workers/tests/README.md`](skills/herdr-workers/tests/README.md).
 
