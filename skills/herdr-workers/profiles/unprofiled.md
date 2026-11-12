@@ -1,6 +1,6 @@
 # Profile: unprofiled kind
 
-What a foreman does with a kind herdr can start and that has no profile in this directory. Nothing has been seen about such a kind, so it gets the most conservative handling, and its run is how its profile begins.
+What a foreman does with a kind the multiplexer can start and that has no profile in this directory. Nothing has been seen about such a kind, so it gets the most conservative handling, and its run is how its profile begins.
 
 ## Before the start
 
@@ -16,6 +16,8 @@ What a foreman does with a kind herdr can start and that has no profile in this 
 ```bash
 herdr agent start <name> --kind <kind> --pane "$P" --timeout 90000 -- <the most restrictive arguments its help showed>
 ```
+
+Under Rex, type `env -u REX_SESSION -u REX_BLOCK <kind> <the most restrictive arguments its help showed>` into the pane's shell, as [`../multiplexers/rex.md`](../multiplexers/rex.md) says.
 
 - Pick the most restrictive mode the help names that can still execute the brief. When the help names none, start it with no arguments: its dialogs and the brief are then its only fence, and you say so in `STARTED`.
 - Pass no allowlist. An allowlist is approved for a kind whose matching rules are known.
@@ -33,7 +35,7 @@ In the report header write the kind as `<kind> (unprofiled)`.
 
 Every dialog of an unprofiled kind is operator-reserved, a read-only command included. You do not know what its options mean, which key selects which, or whether one of them grants more than a single use.
 
-- Read the pane after every wait, whatever status herdr reports. How this kind shows that it waits has not been seen.
+- Read the pane after every wait, whatever status the multiplexer reports. How this kind shows that it waits has not been seen.
 - A kind may show no dialog at all: one ran shell commands under its default settings without asking. Its brief is then its only fence, which is why the brief holds no destructive step.
 - Report the dialog as the guard rails say and wait. Enter the operator's answer for them only when they name the exact key.
 
@@ -47,7 +49,7 @@ The run is the first evidence about this kind. Write it down as a draft profile 
 
 - the start command you ran, and what the pane showed when the worker was ready;
 - the restricting arguments its help lists, marked as read in the help and not tried, unless you used them;
-- each dialog: its text, its options, the status herdr reported while it was open;
+- each dialog: its text, its options, the status the multiplexer reported while it was open;
 - the instruction files it said it loaded, and the provider and model it ran on;
 - whatever went wrong.
 

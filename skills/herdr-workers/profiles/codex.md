@@ -95,3 +95,14 @@ Would you like to run the following command?
 ## Seen in runs
 
 - A worker asked which instruction files it had loaded named a file that does not exist. Its own account of its context is not evidence; a word planted in the rules and asked back is.
+
+## Under Rex
+
+Seen on Rex 0.1.0-preview.14 with codex-cli 0.167.1, in one probe run per step. [`../multiplexers/rex.md`](../multiplexers/rex.md) has the commands.
+
+- **Start:** type `env -u REX_SESSION -u REX_BLOCK codex <mode arguments> --ask-for-approval on-request --no-alt-screen -c '<the rules line>'` into the pane's shell, with the rules line in single quotes. The status read `idle` within two seconds; a trusted directory raised no dialog. The footer shows what is left of both limits (`5h 62% left · weekly 94% left`), which a capture reads without `/status`.
+- **Status:** `done` at the end of a turn; `blocked` with `kind=permission` at a dialog, with an empty `msg`: capture the pane to read the command.
+- **Dialog:** `esc` declined: `Conversation interrupted`, the status became `idle`, and no report followed.
+- **Sandbox:** under `read-only`, a `touch` of a file in `/private/tmp` failed with `Operation not permitted` and raised no dialog; the worker stopped as its rules say. A `rex` command under the same sandbox raised a dialog.
+- **Quit:** type `/quit` and Enter. The status records were removed and the shell came back to the foreground.
+- Started with the foreman's `REX_SESSION`, a worker asked to run `rex session rename "$REX_SESSION" agent-skills-gate0` before it read its brief, following Rex's start-up instruction. That is why the start line unsets both ids and the worker rules leave the multiplexer to the foreman.
