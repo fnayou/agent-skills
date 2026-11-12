@@ -76,6 +76,7 @@ Kinds rename the pane's title as they work (`π - pi-gate0 - agent-skills`, the 
 ## Answer a dialog
 
 - Enter the answer with `rex send-key -s "$REX_SESSION" -b "$P" <key>`, after reading the dialog to pick the key; the profile names the keys. Then wait for the status to change.
+- Read the status again just before the key, and send it only while the status is still `blocked`. The operator can answer in the pane while you read it: a key sent after that lands in the worker's prompt as text. Seen once, with a `1` that the foreman then had to erase with `backspace`.
 - When the operator answers in the pane, stay in the same turn: say which pane to go to, then poll the status every few seconds until it is no longer `blocked`.
 - A declined dialog ends the worker's turn with `idle` and no report. Send the next prompt to say what to do instead.
 
