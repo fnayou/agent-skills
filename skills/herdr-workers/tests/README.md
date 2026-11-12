@@ -86,7 +86,7 @@ Use one fixture per run. Scenarios change it, and the checks assume the starting
 | `run_scenario.py` | drives one scenario: fixture, fresh foreman, prompt, wait, check, report |
 | `check.py` | read-only ground-truth checks, one set per scenario |
 | `tokens.py` | totals paid tokens from a Claude Code or codex session file |
-| `runlog.py` | totals the operator's run log: runs, days, brief types, dialogs, paid tokens |
+| `runlog.py` | totals the operator's run log: runs, days, brief types, dialogs, multiplexer, paid tokens |
 | `scenarios/` | one file per scenario: prompt, expected behaviour, what to observe |
 
 Recorded runs are not imported here: they stay in `tests/results/` of the private `herdr-workers-archive` repository.

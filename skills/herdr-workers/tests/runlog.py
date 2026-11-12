@@ -8,6 +8,10 @@ with "hw-fixture" are scenario runs and are counted apart. A row without the
 eleven fields is listed as malformed, with its line number, and left out of
 every total.
 
+The multiplexer of a run is read from its foreman's session file: the one
+whose panes it split or whose workers it started. A row whose session file
+is not found counts as unknown.
+
 Paid tokens come from the session files Claude Code writes. The foreman's are
 exact: its session id is in the row. A claude worker's session is found by
 where and when it ran: the same directory as the foreman, or a worktree of
@@ -46,6 +50,21 @@ def rows(path):
 def number(text):
     digits = "".join(character for character in text.split(" ")[0] if character.isdigit())
     return int(digits or 0)
+
+
+def multiplexer(path):
+    """The multiplexer a foreman session drove: herdr, rex, or unknown."""
+    text = "\n".join(str(call["input"].get("command", "")) for call in tool_calls(path))
+    found = [name for name, sign in (("herdr", "herdr agent start"), ("rex", "rex split")) if sign in text]
+    return found[0] if len(found) == 1 else "unknown"
+
+
+def tool_calls(path):
+    for record in tokens.records(path):
+        content = (record.get("message") or {}).get("content")
+        for item in content if isinstance(content, list) else []:
+            if isinstance(item, dict) and item.get("type") == "tool_use":
+                yield item
 
 
 def span(path):
@@ -96,6 +115,15 @@ def main():
     print("OPEN", len(unresolved))
     for row in unresolved:
         print("  ", row["date"], row["tree"], "run", row["run"], row["open"])
+
+    driven = {}
+    for row in real:
+        if row["session"] not in driven:
+            files = glob.glob(f"{PROJECTS}/*/{row['session']}.jsonl")
+            driven[row["session"]] = multiplexer(files[0]) if files else "unknown"
+        row["multiplexer"] = driven[row["session"]]
+    print("MULTIPLEXER", " ".join(f"{value}={count}" for value, count in sorted(Counter(row["multiplexer"] for row in real).items())))
+    print("OPEN rex", sum(row in unresolved for row in real if row["multiplexer"] == "rex"))
 
     logged = {row["session"] for row in real if row["session"] not in ("", "-")}
     foreman_total, worker_total, missing, workers = Counter(), Counter(), 0, 0
