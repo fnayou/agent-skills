@@ -61,3 +61,13 @@ It asks before each shell command that no allowlist covers, with status `blocked
 - Without an allowlist, dialogs add up: 6 to 10 for a one-line fix with a test run, about 15 for a small code-plus-test task.
 - With an allowlist, goal briefs still raise many: 18 to 55 foreman-handled dialogs per run on one project's goal briefs in `acceptEdits` on 2026-10-23. The foreman had passed the standing allowlist with its hook-prefixed twins and a run allowlist for tests, branch, push and pull request, and every brief carried the one-command line. Of 1325 Bash calls in the ten heaviest worker sessions: 29% matched the allowlist; 26% were chains, pipes or heredocs; 6% read or searched files through `grep`, `sed -n` or `cat`; 39% were single commands of the task's own tools that no pattern covered (`gh pr`, `gh api`, `gh run`, `git fetch`, `git ls-remote`, `docker`, the linter, the task runner).
 - After about four approvals in a row, a foreman's own permission check has refused its next key press in the worker pane. The run then waits for the operator. An allowlist that covers the routine commands avoids the dialogs that lead there.
+
+## Under Rex
+
+Seen on Rex 0.1.0-preview.14 with Claude Code 2.1.311, in one probe run per step. [`../multiplexers/rex.md`](../multiplexers/rex.md) has the commands.
+
+- **Start:** type `env -u REX_SESSION -u REX_BLOCK claude <mode arguments> --append-system-prompt-file <skill directory>/worker-rules.md --allowedTools "<patterns>"` into the pane's shell. The status read `idle` within two seconds; a trusted directory raised no dialog.
+- **Status:** `working`, with `msg` naming the action in progress; `done` at the end of a turn; `blocked` with `kind=permission` at a dialog, with the request in `msg` (`approve Bash: touch …`).
+- **Dialog:** the options read `1. Yes`, `2. Yes, and always allow access to <directory> from this project`, `3. Yes, and switch to auto mode`, `4. No`. Options 2 and 3 are the operator's. The key `4` declined: the turn ended `Interrupted`, the status became `idle`, and no report followed.
+- **Quit:** type `/exit` and Enter. The status records were removed and the shell came back to the foreground.
+- Started with the foreman's `REX_SESSION`, a worker received Rex's start-up instruction to rename the session, and did not act on it in that run.

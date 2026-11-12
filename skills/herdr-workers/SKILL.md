@@ -16,8 +16,9 @@ You drive the panes through the **multiplexer** your session runs in. Its **mult
 | Multiplexer | You are inside it when | File |
 |---|---|---|
 | herdr | `HERDR_ENV=1` | [`multiplexers/herdr.md`](multiplexers/herdr.md) |
+| Rex (preview) | `REX_SESSION` is set | [`multiplexers/rex.md`](multiplexers/rex.md) |
 
-When none of them is present, say so and do the work the normal way.
+When both are present, drive the innermost one, the one whose pane your shell runs in; when you cannot tell which, ask the operator. When none of them is present, say so and do the work the normal way.
 
 Claude Code is the reference foreman. In another harness you are an **unprofiled foreman**: say so in your first message to the operator, and hold the guard rails yourself. Your harness may not ask before a write, so "you never implement" and the operator-reserved dialogs rest on you alone.
 

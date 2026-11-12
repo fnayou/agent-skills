@@ -55,17 +55,18 @@ approval. See [`skills/project-bootstrap/SKILL.md`](skills/project-bootstrap/SKI
 
 Runs the session as a foreman for a task the operator delegates explicitly:
 it plans, writes the brief, and verifies, while worker agents execute in
-herdr panes the operator can watch. The foreman changes nothing itself. Work that can be written as exact steps goes to pi on a local model;
+herdr or Rex panes the operator can watch. The foreman changes nothing itself. Work that can be written as exact steps goes to pi on a local model;
 work that needs investigation goes to a paid worker, which may draft the steps
 for pi.
 
-- **Requires** herdr, with the foreman session running inside a herdr pane:
-  the skill checks `HERDR_ENV=1` and, when it is unset, says so and works the
-  normal way. Built against herdr 0.9.3.
+- **Requires** a terminal multiplexer, with the foreman session running inside
+  one of its panes: herdr (`HERDR_ENV=1`, built against 0.9.3) or Rex
+  (`REX_SESSION` set; a preview, probed on 0.1.0-preview.14). With neither, the
+  skill says so and works the normal way.
 - **Foreman:** Claude Code is the reference foreman. Another harness runs as
   an unprofiled foreman and says so in its first message.
 - **Worker kinds** with a profile: `pi`, `claude`, `opencode`, and `codex`.
-  Any other kind herdr starts is handled as an unprofiled kind, with every
+  Any other kind the multiplexer starts is handled as an unprofiled kind, with every
   dialog left to the operator.
 - **Optional files** in `~/.config/herdr-workers/`, copied from the templates
   in the skill: `machine.md` (machine facts: local model, output-condensing
@@ -116,7 +117,7 @@ skill in that harness.
 | `project-presentation` | `python3`; `rsvg-convert` for raster brand assets; the packages in `requirements-docs.txt` (Zensical) for the documentation track. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
 | `agent-browser` | `claude mcp add -s user` for `playwright`, `playwright-auth`, and `safari-mcp`. | `[mcp_servers.*]` entries in `${CODEX_HOME:-~/.codex}/config.toml`. | `mcp.servers` entries in `~/.config/opencode/opencode.jsonc` (OpenCode 2.x). | `mcpServers` entries in `${PI_CODING_AGENT_DIR:-~/.pi/agent}/mcp.json`. |
 | `project-bootstrap` | `python3`; an authenticated `gh` for any GitHub work; the Matt Pocock setup skill for Create and Adopt. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
-| `herdr-workers` | herdr, with the session inside a herdr pane (`HERDR_ENV=1`); at least one worker agent herdr can start; optional files in `~/.config/herdr-workers/`. The reference foreman. | Same needs as Claude Code. Restart codex after linking: an open session does not see a new skill. Runs as an unprofiled foreman. | Same needs as Claude Code. Runs as an unprofiled foreman. | Not tested as a foreman. |
+| `herdr-workers` | herdr (`HERDR_ENV=1`) or Rex (`REX_SESSION`, preview), with the session inside one of its panes; at least one worker agent it can start; optional files in `~/.config/herdr-workers/`. The reference foreman. | Same needs as Claude Code. Restart codex after linking: an open session does not see a new skill. Runs as an unprofiled foreman. | Same needs as Claude Code. Runs as an unprofiled foreman. | Not tested as a foreman. |
 
 `agent-browser` client entries are spelled out in
 [`skills/agent-browser/references/setup.md`](skills/agent-browser/references/setup.md).
@@ -239,7 +240,7 @@ checks:
   builds and passes its own check (`RESULT 00-fixture PASS`).
 
 CI also runs ShellCheck on `scripts/` and `skills-ref validate` on each skill.
-The scenario runs of `herdr-workers` need herdr and live agents; they are not
+The scenario runs of `herdr-workers` need herdr and live agents (the driver does not drive Rex yet); they are not
 part of verification: see
 [`skills/herdr-workers/tests/README.md`](skills/herdr-workers/tests/README.md).
 

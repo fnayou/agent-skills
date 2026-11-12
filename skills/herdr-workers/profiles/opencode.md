@@ -125,3 +125,12 @@ $ <the command, whole>                     (for an edit: the file name and the d
 - A subcommand that needs the background service can hang: `opencode auth list`, from an agent's shell, ended after two minutes with `Transport: The operation timed out.` `opencode debug agents` and `opencode debug config`, run in the working directory, answered and show the permission rules and the configuration files in force for the background service; they take no `--standalone`.
 - On its first shell command a worker made two failed tool calls (`Unknown tool 'shell'`, a malformed search) before it found its shell tool. No effect on the result.
 - A literal brief of about 2,900 characters arrived whole through `herdr agent prompt`.
+
+## Under Rex
+
+Seen on Rex 0.1.0-preview.14 with opencode 2.2.7, in one probe run per step. [`../multiplexers/rex.md`](../multiplexers/rex.md) has the commands.
+
+- **Start:** type `env -u REX_SESSION -u REX_BLOCK OPENCODE_CONFIG_DIR=<configuration directory> opencode --standalone` into the pane's shell. The status read `idle` within two seconds, with the prompt box on screen. The `permissions` rules above still applied on 2.2.7: under `shell * ask` a `touch` raised a dialog.
+- **Status:** a turn ends with `idle`; no `done` was seen. At a dialog, `blocked` with `kind=permission` and the `msg` `Permission needs input`; `title` names the task. opencode writes two records, one without an `id` and one per opencode session (`id=ses_…`): read the one without an `id`.
+- **Dialog:** `right right enter` rejected: `The user declined this tool call`, the status became `idle`, and no report followed. The selected option is shown by colour alone; capture with `--format=vt` before a key that matters.
+- **Quit:** type `/exit` and Enter. The status records were removed and the shell came back to the foreground.
