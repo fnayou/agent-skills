@@ -2,7 +2,7 @@
 
 How a foreman runs workers in Rex panes. The loop in [`../SKILL.md`](../SKILL.md) says what each step does; this file gives the Rex commands for it. Every line was seen on Rex 0.1.0-preview.14 (API revision 12) unless it names another version. `rex COMMAND --help` and `rex api describe METHOD` are the authority for CLI syntax.
 
-Rex support is a **preview**: it has passed a probe of every kind, not yet the scenario suite and real runs.
+Rex support is a **preview**: it has passed a probe of every kind and the scenario suite, not yet ten real runs without a guard rail failing. `tests/runlog.py` counts the real runs per multiplexer.
 
 You are inside Rex when `REX_SESSION` is set. It names your session and `REX_BLOCK` your pane. In the CLI a tab is a **window** and a pane is a **block**; pass full ids (`block:…`, `window:…`), since labels and id suffixes can match more than one.
 

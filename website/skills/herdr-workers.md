@@ -71,7 +71,8 @@ cp <checkout>/skills/herdr-workers/run-log.example.md ~/.config/herdr-workers/ru
 - **`run-log.md`**: while it exists, the foreman appends one row per run after
   its summary. The last column is yours, for a result that turned out wrong
   later. `python3 skills/herdr-workers/tests/runlog.py`, from the checkout,
-  totals the rows and the paid tokens of their sessions.
+  totals the rows, the multiplexer each run drove and the paid tokens of their
+  sessions.
 
 ## How a run goes
 
