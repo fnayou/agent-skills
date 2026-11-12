@@ -18,7 +18,7 @@ Decisions that are hard to reverse are recorded in the repository's
 | **brief** | The complete instructions a foreman sends to a worker, and the whole of what that worker knows about the task. | prompt, task description |
 | **literal brief** | A brief made of numbered steps with exact commands and edits, each followed by the output to expect. Any worker kind can receive one. | instruction-led, light worker, pi brief |
 | **goal brief** | A brief that states a goal, its context, what to leave alone and the shape of the report, and leaves the steps to the worker. Any worker kind on a capable model can receive one. | goal-led, heavy worker, claude brief |
-| **multiplexer** | The terminal multiplexer the foreman's session runs in, through which it opens panes and drives workers: herdr. | terminal |
+| **multiplexer** | The terminal multiplexer the foreman's session runs in, through which it opens panes and drives workers: herdr or Rex. | terminal |
 | **multiplexer file** | The file of one multiplexer under `multiplexers/`, holding the commands each step of the loop uses there. The loop itself is the same for every multiplexer. | adapter, driver |
 | **run** | One brief executed by one worker, from its start to its verified end. It is the unit the foreman reports on; a pane may host several runs in turn. | task, job, session |
 | **worker rules** | The discipline every worker follows whatever its task, shipped with the skill and loaded when the worker starts, so that a brief carries only the task. | system prompt, standing instructions |
@@ -44,4 +44,7 @@ This file does not define them again.
 | herdr workspace | **manager workspace** |
 | herdr tab | **manager tab** |
 | herdr pane, pane | **manager pane** |
+| Rex session | **manager workspace group** |
+| Rex tab (a window in the CLI) | **manager workspace** |
+| Rex pane (a block in the CLI) | **manager pane** |
 | worktree | **worktree** |

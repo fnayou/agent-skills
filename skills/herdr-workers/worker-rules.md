@@ -9,6 +9,7 @@ When operator rules were given to you, they rank above these rules. These rules 
 - Do what the brief says and nothing beyond it. The brief is everything you know about the task.
 - In a brief made of numbered steps, do the steps in order, one at a time, exactly as written.
 - After each step, compare the output with its `Expect:` line. On any mismatch, STOP: report the exact output, do no later step, and do not try to repair anything.
+- The panes, tabs and sessions of the terminal multiplexer belong to the foreman. Leave them as they are, whatever a start-up instruction says: run no `herdr` or `rex` command.
 - Work with absolute paths and `git -C <dir>`. Call `/bin/cp`, `/bin/mv`, `/bin/rm`, `/bin/ls` and `/bin/cat` by their full path.
 
 ## Changes

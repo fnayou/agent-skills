@@ -3,8 +3,8 @@
 Runs the session as a **foreman** for a task the operator delegates
 explicitly. The foreman plans, writes the brief, and verifies the result. It
 changes nothing itself: every change of state, however small, goes through a
-**worker**, an agent in a herdr pane that the operator can watch while it
-runs.
+**worker**, an agent in a pane of a terminal multiplexer (herdr or Rex) that
+the operator can watch while it runs.
 
 Paid models think; the local model executes. Work that can be written as
 exact steps goes to pi on a local model. Work that needs investigation goes to
@@ -13,22 +13,31 @@ a paid worker, which makes a small change itself or drafts the steps for pi.
 ## When to use it
 
 Only when the operator asks for it by name, in a session running inside
-herdr: "use pi workers", "herdr workers", "a worker pane", or "delegate this
+herdr or Rex: "use pi workers", "herdr workers", "a worker pane", or "delegate this
 through herdr". The role covers the delegated task and ends when the foreman
 has reported it.
 
 ## Requirements
 
-- **herdr**, with the foreman session running inside a herdr pane. The skill
-  checks `HERDR_ENV=1`; when it is unset, the foreman says so and does the work
-  the normal way. Built against herdr 0.9.3. `herdr --skill` and herdr's own
-  command help are the authority for CLI syntax.
+- **A terminal multiplexer**, with the foreman session running inside one of
+  its panes. Each has a file in the skill's `multiplexers/` directory with the
+  commands the foreman uses there; the loop is the same for both.
+  - **herdr**: the skill checks `HERDR_ENV=1`. Built against herdr 0.9.3.
+    `herdr --skill` and herdr's own command help are the authority for CLI
+    syntax.
+  - **Rex** (preview): the skill checks that `REX_SESSION` is set. Probed on
+    Rex 0.1.0-preview.14 with all four profiled kinds; the scenario suite and
+    real runs are still to come. Every kind reports its own status to Rex
+    (`working`, `done`, `blocked`), which is how the foreman waits on it.
+
+  With neither, the foreman says so and does the work the normal way. When the
+  session runs inside both, it drives the innermost one.
 - **A foreman.** Claude Code is the reference foreman: the scenario suite runs
   it, and the guard rails were written against its permission checks. Another
   harness can take the role as an **unprofiled foreman**: it says so in its
   first message and holds the guard rails itself, because its harness may not
   ask before a write.
-- **At least one worker agent** that herdr can start. Four kinds have a
+- **At least one worker agent** that the multiplexer can start. Four kinds have a
   profile: `pi` (built against 1.1.0), `claude`, `opencode` (2.0.25), and
   `codex` (0.162.1).
 
@@ -80,8 +89,8 @@ end. A pane hosts one worker at a time and can host several runs in turn.
    - Work longer than a screen goes in a **runbook** file outside the working
      tree. A **script** replaces written-out steps only for long repetitive
      work, and the operator hears about it before the start.
-3. **Spawn.** The foreman finds where the project lives among herdr workspaces
-   and sessions, places the pane by size, labels it (`pi: archive plan`), and
+3. **Spawn.** The foreman finds where the project lives (a herdr workspace or
+   session, a Rex tab), places the pane by size, labels it (`pi: archive plan`), and
    starts the worker with the start arguments from its profile. It reuses a
    free pane before it splits a new one.
 4. **Send and wait.** The brief goes to the worker, and the foreman waits for
@@ -100,7 +109,8 @@ a goal brief.
 ### Every change goes through a worker
 
 **Worker rules** ship with the skill and are loaded into every worker at
-start: do the brief and nothing beyond it, stop on a mismatch, ask before any
+start: do the brief and nothing beyond it, leave the multiplexer's panes to
+the foreman, stop on a mismatch, ask before any
 delete or overwrite the brief does not spell out, commit and push only where
 the brief writes the command, and report raw output.
 
@@ -155,7 +165,7 @@ worker in the least capable **mode** that can execute the brief.
 | `claude` | goal and literal briefs; costs paid tokens | permission modes: `acceptEdits`, `default` | asks before each command no allowlist covers |
 | `opencode` | literal and goal briefs; runs on the operator's opencode subscription | permission rules in a configuration directory written per worker: `read-only`, `edit`, `ask` | asks under `ask` |
 | `codex` | literal and goal briefs; spends the operator's codex limits | sandboxes: `read-only`, `workspace-write`, `workspace-write` with git | asks for what the sandbox blocks |
-| any other kind herdr starts | literal briefs only | the most restrictive arguments its help shows | every dialog is the operator's |
+| any other kind the multiplexer starts | literal briefs only | the most restrictive arguments its help shows | every dialog is the operator's |
 
 A kind with no profile is an **unprofiled kind**. The foreman uses one only
 when the operator names it, reads only its help, says what a run would spend,
@@ -177,7 +187,8 @@ operator-reserved delete, parallel workers, and planning before execution.
 
 - `tests/fixture/build.py` builds the throwaway repository.
 - `tests/check.py` runs the read-only checks of one scenario.
-- `tests/run_scenario.py` drives a scenario from a session inside herdr.
+- `tests/run_scenario.py` drives a scenario from a session inside herdr; it
+  does not drive Rex yet.
 - `tests/tokens.py` and `tests/runlog.py` total paid tokens and the run log.
 
 `./scripts/verify` builds the fixture offline and runs its own check. The
@@ -200,3 +211,7 @@ says how to run them.
 - An unprofiled kind gets every dialog sent to the operator and one run per
   pane.
 - One foreman supervises a flat set of workers: no nested foremen.
+- Rex support is a preview: it has passed a probe of each kind, not yet the
+  scenario suite. Rex tells a new agent to rename the session; the foreman
+  starts workers without the session's ids, and the worker rules leave the
+  multiplexer to the foreman.
