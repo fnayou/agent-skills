@@ -49,6 +49,20 @@ def as_json(result):
         return {"raw": result.stdout + result.stderr}
 
 
+def session_label():
+    """The label of the driver's Rex session, or None outside Rex."""
+    session = os.environ.get("REX_SESSION")
+    return session and as_json(run("rex", "session", "inspect", session, "--json")).get("label")
+
+
+def restore_label(saved):
+    # Rex's start-up hook asks every new agent, the foreman under test included, to rename the session.
+    now = session_label()
+    if saved and now != saved:
+        run("rex", "session", "rename", os.environ["REX_SESSION"], saved)
+        print("SESSION_RENAMED", now, "restored to", saved)
+
+
 class Herdr:
     """The foreman as a herdr agent, found by its name."""
 
@@ -58,6 +72,8 @@ class Herdr:
         self.fixture = fixture
         self.agent = "tf-" + re.sub(r"[^a-z0-9]", "-", Path(fixture).name.lower())
         self.pane = None
+        # herdr inside a Rex pane: the foreman still gets Rex's start-up hook.
+        self.label = session_label()
 
     def herdr(self, *args, timeout=120):
         return as_json(run("herdr", *args, timeout=timeout))
@@ -109,7 +125,7 @@ class Herdr:
         self.herdr("pane", "close", self.pane)
 
     def restore(self):
-        pass
+        restore_label(self.label)
 
 
 class Rex:
@@ -121,8 +137,7 @@ class Rex:
         self.fixture = fixture
         self.session = os.environ["REX_SESSION"]
         self.pane = None
-        # Rex's start-up hook asks every new agent, the foreman under test included, to rename the session.
-        self.label = as_json(self.rex("session", "inspect", self.session, "--json")).get("label")
+        self.label = session_label()
 
     def rex(self, *args, timeout=60):
         return run("rex", *args, timeout=timeout)
@@ -201,10 +216,7 @@ class Rex:
         self.rex("block", "close", "-s", self.session, self.pane)
 
     def restore(self):
-        now = as_json(self.rex("session", "inspect", self.session, "--json")).get("label")
-        if self.label and now != self.label:
-            self.rex("session", "rename", self.session, self.label)
-            print("SESSION_RENAMED", now, "restored to", self.label)
+        restore_label(self.label)
 
 
 def multiplexer(args):
@@ -254,7 +266,7 @@ def session_files(fixture):
     return sorted(glob.glob(os.path.expanduser(f"~/.claude/projects/{slug}*/*.jsonl")), key=os.path.getmtime)
 
 
-def report_session(path, fixture):
+def report_session(path, fixture, driven):
     calls, skills, commands, changes = 0, [], [], []
     for item in tool_calls(path):
         calls += 1
@@ -290,6 +302,10 @@ def report_session(path, fixture):
             "closes", text.count("herdr pane close") + text.count("rex block close"),
             "prompts", text.count("herdr agent prompt") + text.count("follow it exactly"),
         )
+        # With both multiplexers present, the foreman must drive the one the driver ran it in.
+        other = "rex split" if driven == "herdr" else "herdr pane split"
+        if other in text:
+            print("WRONG_MULTIPLEXER the foreman ran", other, "under", driven)
 
 
 def main():
@@ -347,7 +363,7 @@ def main():
     print(run(sys.executable, str(TESTS / "check.py"), scenario, fixture).stdout.strip())
 
     for path in session_files(fixture):
-        report_session(path, fixture)
+        report_session(path, fixture, foreman.name)
 
     print("AGENTS_LEFT", foreman.agents_left())
     foreman.restore()
