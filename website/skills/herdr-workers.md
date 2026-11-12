@@ -187,12 +187,12 @@ operator-reserved delete, parallel workers, and planning before execution.
 
 - `tests/fixture/build.py` builds the throwaway repository.
 - `tests/check.py` runs the read-only checks of one scenario.
-- `tests/run_scenario.py` drives a scenario from a session inside herdr; it
-  does not drive Rex yet.
+- `tests/run_scenario.py` drives a scenario from a session inside herdr or
+  Rex.
 - `tests/tokens.py` and `tests/runlog.py` total paid tokens and the run log.
 
 `./scripts/verify` builds the fixture offline and runs its own check. The
-scenario runs need herdr and live agents, and some need the operator at the
+scenario runs need herdr or Rex and live agents, and some need the operator at the
 keyboard; the
 [tests README](https://github.com/fnayou/agent-skills/blob/main/skills/herdr-workers/tests/README.md)
 says how to run them.

@@ -1,6 +1,6 @@
 ---
 name: herdr-workers
-description: Run as foreman for an explicitly delegated task — plan, brief, and verify while workers of any kind execute in visible herdr panes. Use only when the operator asks for pi/herdr workers, a worker pane, or delegation through herdr.
+description: Run as foreman for an explicitly delegated task — plan, brief, and verify while workers of any kind execute in visible herdr or Rex panes. Use only when the operator asks for pi/herdr/Rex workers, a worker pane, or delegation through herdr or Rex.
 ---
 
 # Herdr workers
