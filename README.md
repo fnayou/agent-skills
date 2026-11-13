@@ -51,7 +51,7 @@ file generation, GitHub governance templates, and an opt-in Taskfile/Docker
 workflow. Audit is read-only; publishing and Git writes require separate
 approval. See [`skills/project-bootstrap/SKILL.md`](skills/project-bootstrap/SKILL.md).
 
-### `herdr-workers`
+### `foreman-workers`
 
 Runs the session as a foreman for a task the operator delegates explicitly:
 it plans, writes the brief, and verifies, while worker agents execute in
@@ -68,7 +68,7 @@ for pi.
 - **Worker kinds** with a profile: `pi`, `claude`, `opencode`, and `codex`.
   Any other kind the multiplexer starts is handled as an unprofiled kind, with every
   dialog left to the operator.
-- **Optional files** in `~/.config/herdr-workers/`, copied from the templates
+- **Optional files** in `~/.config/foreman-workers/`, copied from the templates
   in the skill: `machine.md` (machine facts: local model, output-condensing
   hooks, the shell tool's time limit), `operator-rules.md` (the operator's own
   rules for workers), and `run-log.md` (one row per run). Without them the
@@ -76,8 +76,8 @@ for pi.
 
 Ask for it by name: "use pi workers", "herdr workers", "a worker pane", or
 "delegate this through herdr". The vocabulary is in
-[`skills/herdr-workers/references/terminology.md`](skills/herdr-workers/references/terminology.md),
-and its decisions are in `docs/adr/herdr-workers-*.md`.
+[`skills/foreman-workers/references/terminology.md`](skills/foreman-workers/references/terminology.md),
+and its decisions are in `docs/adr/foreman-workers-*.md`.
 
 ## Install
 
@@ -117,7 +117,7 @@ skill in that harness.
 | `project-presentation` | `python3`; `rsvg-convert` for raster brand assets; the packages in `requirements-docs.txt` (Zensical) for the documentation track. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
 | `agent-browser` | `claude mcp add -s user` for `playwright`, `playwright-auth`, and `safari-mcp`. | `[mcp_servers.*]` entries in `${CODEX_HOME:-~/.codex}/config.toml`. | `mcp.servers` entries in `~/.config/opencode/opencode.jsonc` (OpenCode 2.x). | `mcpServers` entries in `${PI_CODING_AGENT_DIR:-~/.pi/agent}/mcp.json`. |
 | `project-bootstrap` | `python3`; an authenticated `gh` for any GitHub work; the Matt Pocock setup skill for Create and Adopt. | Same as Claude Code. | Same as Claude Code. | Same as Claude Code. |
-| `herdr-workers` | herdr (`HERDR_ENV=1`) or Rex (`REX_SESSION`, preview), with the session inside one of its panes; at least one worker agent it can start; optional files in `~/.config/herdr-workers/`. The reference foreman. | Same needs as Claude Code. Restart codex after linking: an open session does not see a new skill. Runs as an unprofiled foreman. | Same needs as Claude Code. Runs as an unprofiled foreman. | Not tested as a foreman. |
+| `foreman-workers` | herdr (`HERDR_ENV=1`) or Rex (`REX_SESSION`, preview), with the session inside one of its panes; at least one worker agent it can start; optional files in `~/.config/foreman-workers/`. The reference foreman. | Same needs as Claude Code. Restart codex after linking: an open session does not see a new skill. Runs as an unprofiled foreman. | Same needs as Claude Code. Runs as an unprofiled foreman. | Not tested as a foreman. |
 
 `agent-browser` client entries are spelled out in
 [`skills/agent-browser/references/setup.md`](skills/agent-browser/references/setup.md).
@@ -235,14 +235,14 @@ checks:
   servers, a bypassed launcher, a missing client config, and a stale profile
   lock;
 - `project-bootstrap`: its unit tests pass and its scripts parse;
-- `herdr-workers`: the files `SKILL.md` links to exist, its terminology
+- `foreman-workers`: the files `SKILL.md` links to exist, its terminology
   exists, every Python file under `tests/` compiles, and the scenario fixture
   builds and passes its own check (`RESULT 00-fixture PASS`).
 
 CI also runs ShellCheck on `scripts/` and `skills-ref validate` on each skill.
-The scenario runs of `herdr-workers` need herdr or Rex and live agents; they are not
+The scenario runs of `foreman-workers` need herdr or Rex and live agents; they are not
 part of verification: see
-[`skills/herdr-workers/tests/README.md`](skills/herdr-workers/tests/README.md).
+[`skills/foreman-workers/tests/README.md`](skills/foreman-workers/tests/README.md).
 
 ## License
 
