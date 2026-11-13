@@ -47,5 +47,5 @@ skill, and exercises installation, `--check`, and the installer's refusals in
 an isolated temporary directory. It also runs each skill's own checks: the
 `worktree-lanes` terminology, the `project-presentation` brand and
 documentation starters, the `agent-browser` launcher and readiness check, the
-`project-bootstrap` unit tests, and the `herdr-workers` test scripts and
+`project-bootstrap` unit tests, and the `foreman-workers` test scripts and
 scenario fixture. It never changes links in your home directory.

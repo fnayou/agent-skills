@@ -220,21 +220,21 @@ python3 -I -c 'import ast, sys; [ast.parse(open(path).read()) for path in sys.ar
   "${BOOTSTRAP_SKILL}/scripts/scaffold.py" \
   "${BOOTSTRAP_SKILL}/scripts/validate.py" || fail "project-bootstrap scripts do not parse"
 
-HERDR_SKILL="${SKILLS_ROOT}/herdr-workers"
-HERDR_FILE="${HERDR_SKILL}/SKILL.md"
+FOREMAN_SKILL="${SKILLS_ROOT}/foreman-workers"
+FOREMAN_FILE="${FOREMAN_SKILL}/SKILL.md"
 for reference in worker-rules.md parallel.md escalation.md profiles/pi.md profiles/claude.md \
   profiles/opencode.md profiles/codex.md profiles/unprofiled.md multiplexers/herdr.md multiplexers/rex.md; do
-  grep -q "(${reference})" "${HERDR_FILE}" || fail "herdr-workers ${reference} is not discoverable"
-  [[ -f "${HERDR_SKILL}/${reference}" ]] || fail "herdr-workers ${reference} is missing"
+  grep -q "(${reference})" "${FOREMAN_FILE}" || fail "foreman-workers ${reference} is not discoverable"
+  [[ -f "${FOREMAN_SKILL}/${reference}" ]] || fail "foreman-workers ${reference} is missing"
 done
-[[ -f "${HERDR_SKILL}/references/terminology.md" ]] || fail "herdr-workers terminology is missing"
-HERDR_SCRIPTS=()
+[[ -f "${FOREMAN_SKILL}/references/terminology.md" ]] || fail "foreman-workers terminology is missing"
+FOREMAN_SCRIPTS=()
 while IFS= read -r -d '' path; do
-  HERDR_SCRIPTS+=("${path}")
-done < <(find "${HERDR_SKILL}/tests" -name '*.py' -print0)
-(( ${#HERDR_SCRIPTS[@]} > 0 )) || fail "herdr-workers has no test scripts"
+  FOREMAN_SCRIPTS+=("${path}")
+done < <(find "${FOREMAN_SKILL}/tests" -name '*.py' -print0)
+(( ${#FOREMAN_SCRIPTS[@]} > 0 )) || fail "foreman-workers has no test scripts"
 "${PYTHON:-python3}" -I -c 'import sys; [compile(open(path).read(), path, "exec") for path in sys.argv[1:]]' \
-  "${HERDR_SCRIPTS[@]}" || fail "herdr-workers test scripts do not compile"
+  "${FOREMAN_SCRIPTS[@]}" || fail "foreman-workers test scripts do not compile"
 
 # Build the scenario fixture offline and run its own check on it, with a
 # fixed git identity and none of the user's git configuration.
@@ -242,9 +242,9 @@ FIXTURE_ROOT="${VERIFY_ROOT}/hw-fixture"
 FIXTURE_GIT_ENV=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
   GIT_AUTHOR_NAME=verify GIT_AUTHOR_EMAIL=verify@example.invalid \
   GIT_COMMITTER_NAME=verify GIT_COMMITTER_EMAIL=verify@example.invalid)
-"${FIXTURE_GIT_ENV[@]}" "${PYTHON:-python3}" -B -I "${HERDR_SKILL}/tests/fixture/build.py" "${FIXTURE_ROOT}" >/dev/null || \
-  fail "herdr-workers fixture did not build"
-fixture_report=$("${FIXTURE_GIT_ENV[@]}" "${PYTHON:-python3}" -B -I "${HERDR_SKILL}/tests/check.py" 00-fixture "${FIXTURE_ROOT}" || true)
-grep -q '^RESULT 00-fixture PASS' <<<"${fixture_report}" || fail "herdr-workers fixture failed its own check"
+"${FIXTURE_GIT_ENV[@]}" "${PYTHON:-python3}" -B -I "${FOREMAN_SKILL}/tests/fixture/build.py" "${FIXTURE_ROOT}" >/dev/null || \
+  fail "foreman-workers fixture did not build"
+fixture_report=$("${FIXTURE_GIT_ENV[@]}" "${PYTHON:-python3}" -B -I "${FOREMAN_SKILL}/tests/check.py" 00-fixture "${FIXTURE_ROOT}" || true)
+grep -q '^RESULT 00-fixture PASS' <<<"${fixture_report}" || fail "foreman-workers fixture failed its own check"
 
-printf '%s\n' 'PASS: skills, installer, agent browser, project-bootstrap, herdr-workers, and brand and documentation starters verified'
+printf '%s\n' 'PASS: skills, installer, agent browser, project-bootstrap, foreman-workers, and brand and documentation starters verified'
