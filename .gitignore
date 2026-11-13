@@ -3,3 +3,4 @@
 site/
 website/assets/
 reports/
+__pycache__/

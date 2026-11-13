@@ -22,7 +22,7 @@ for skill_dir in "${SKILLS_ROOT}"/*/; do
   [[ $(sed -n '1p' "${skill_dir}/SKILL.md") == '---' ]] || fail "${name}: missing YAML frontmatter"
   grep -qx "name: ${name}" "${skill_dir}/SKILL.md" || fail "${name}: skill name does not match directory"
   grep -q '^description: .\+' "${skill_dir}/SKILL.md" || fail "${name}: missing description"
-  if grep -R -q '/Users/' "${skill_dir}"; then
+  if grep -R -q --exclude-dir=__pycache__ '/Users/' "${skill_dir}"; then
     fail "${name}: skill contains a machine-specific absolute path"
   fi
   # Every relative markdown link in a skill must resolve to a file.
