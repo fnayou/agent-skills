@@ -8,7 +8,7 @@ You are inside Rex when `REX_SESSION` is set. It names your session and `REX_BLO
 
 ## Find where the project lives
 
-An operator keeps one Rex session with a tab per project. `rex session inspect "$REX_SESSION" --json` lists the tabs under `windows`, each with its `window_id`, `label` and `focused_block_id`; `rex block call -s "$REX_SESSION" -b <block> pwd` gives a pane's working directory. The project's tab is the one whose label names the project or whose panes work in the task's working tree. Your own tab is the `window_id` of `rex block inspect -s "$REX_SESSION" "$REX_BLOCK" --json`.
+An operator keeps one Rex session with a tab per project. `rex session inspect "$REX_SESSION" --json` lists the tabs under `windows`, each with its `window_id`, `label` and `focused_block_id`; `rex block call -s "$REX_SESSION" -b <block> pwd` gives a pane's working directory. The project's tab is the one whose label names the project or whose panes work in the task's working tree. Your own tab is `.block.window_id` of `rex block inspect -s "$REX_SESSION" "$REX_BLOCK" --json`: the output has no top-level `window_id`.
 
 When the project has no tab of its own, or it is yours, spawn beside yourself. When it is another one, stop before the spawn and give the operator two answers:
 
@@ -27,10 +27,11 @@ rex send -s "$REX_SESSION" -b "$P" "env -u REX_SESSION -u REX_BLOCK <start comma
 ```
 
 - The shell stays in the pane after the worker quits, so the pane can host the next worker.
+- **Before you type a start command, check that the shell holds the pane:** `rex block call -s "$REX_SESSION" -b "$P" process` names it as `foreground`. A start command typed into a live worker is a chat message to it: the worker runs nothing, answers or ignores it, then takes the brief that follows as the same worker. A foreman's script that skipped this check reused one worker per pane across six briefs it reported as fresh, and an opencode context grew from 92.6K to 481.5K tokens.
 - `env -u REX_SESSION -u REX_BLOCK` keeps your session and pane ids from the worker. Rex installs a start-up hook in Claude Code and codex that tells an agent to rename `$REX_SESSION`; a codex worker that inherited the ids tried to rename the operator's session before reading its brief. With both unset the hook says nothing.
 - An environment variable the profile asks for goes on the same line, before the command (`OPENCODE_CONFIG_DIR=<dir> opencode …`).
 - The worker is ready when its status reads `idle` (see **Status**): every kind reported it within two seconds. Read the pane once before the first brief.
-- **Reuse a pane:** relabel it with `rex block rename -s "$REX_SESSION" "$P" "<kind>: <task>"`. For a fresh worker, end the old one with the quit command in its profile, check the pane is back at its shell prompt, and type the start command again.
+- **Reuse a pane:** relabel it with `rex block rename -s "$REX_SESSION" "$P" "<kind>: <task>"`. For a fresh worker, end the old one with the quit command in its profile, check with `process` that the shell is in the foreground again, and type the start command.
 
 **Place by size.** `rex block call -s "$REX_SESSION" -b <block> size` gives a pane's `columns` and `rows`; `rex block ls -s "$REX_SESSION" -w <tab> --json` lists the panes of a tab. When no pane can be split, open a tab for the workers:
 
@@ -70,6 +71,8 @@ rex capture -s "$REX_SESSION" -b "$P" --trim | tail -n 60
 ```
 
 The capture holds the screen as rendered: a markdown heading comes back without its `#`, and an option selected by colour alone looks like the others. For an exact output, have the worker print it with a command and read that, or read its session file. To see which option of a dialog is selected, capture with `--format=vt`.
+
+`rex capture` returns the screen and has no scrollback option. A report longer than the screen loses its first lines: opencode's full-screen view lost the head of several. Read the worker's session file, or prompt the same worker to print the report again with no tool calls. A codex worker runs with `--no-alt-screen`, so the previous worker's report can stay on screen above the new one: name a closing line unique to each brief, with its run number, and read back from the last one.
 
 Kinds rename the pane's title as they work (`π - pi-gate0 - agent-skills`, the task in a few words); the label set with `--label` is a separate field.
 

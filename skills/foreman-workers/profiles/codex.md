@@ -10,7 +10,7 @@ A mode is the sandbox the worker is started in, together with `--ask-for-approva
 
 | Mode | Start arguments | Runs without a dialog | Asks or fails |
 |---|---|---|---|
-| `read-only` | `--sandbox read-only` | reading files, read-only commands, a test run (`python3 -m unittest`, which then writes no cache) | every edit and every command that writes asks, one dialog each |
+| `read-only` | `--sandbox read-only` | reading files, read-only commands, a test run (`python3 -m unittest`, which then writes no cache) | every edit, every command that writes and every command that uses the network asks, one dialog each |
 | `workspace-write` | `--sandbox workspace-write` | edits and commands that write inside the working tree | git commands that write (`switch -c`, `add`, `commit`) fail: the sandbox keeps `.git` read-only |
 | `workspace-write` with git | `--sandbox workspace-write --add-dir <working tree>/.git` | the above, and `git switch -c`, `git add`, `git commit` | — |
 
@@ -19,6 +19,7 @@ A mode is the sandbox the worker is started in, together with `--ask-for-approva
 - Under `read-only`, a command the operator or the foreman approves runs outside the sandbox, for that one time: `✔ You approved codex to run … this time`. A branch, two edits, a staging and a commit were five dialogs.
 - In `workspace-write` without the `.git` directory, a blocked git command raised no dialog: it failed with `cannot lock ref`, and the worker stopped as its rules say.
 - codex has no allowlist argument. The sandbox takes that place: there is no standing allowlist and no run allowlist for this kind.
+- Read-only research over the web is dialog-heavy on codex: every `curl`, `gh api` and registry fetch under `read-only` asked, 53 dialogs in one run on 2026-11-13. Give such a brief to a kind that fetches without a dialog, or tell the operator the count to expect before the run.
 
 ## Start
 
