@@ -117,7 +117,7 @@ $ <the command, whole>                     (for an edit: the file name and the d
 ## Start, model, end
 
 - `agent start` returns `idle` and ready while the pane still shows the splash. Read the pane again a few seconds later, until the prompt box `Ask anything…` is there, before you send the brief.
-- The line under the prompt box names the agent and the model (`Build · <model>`). The worker runs on the model the operator last used, on the operator's opencode subscription; the interactive command has no model argument.
+- The line under the prompt box names the agent and the model (`Build · <model>`). The worker runs on the model the operator last used, on the operator's opencode subscription; the interactive command has no model argument. On opencode 2.3.0, a `"model": "<provider>/<model>"` key in the configuration directory's `opencode.jsonc` chose the model.
 - To end the worker and free its pane for a fresh one: `herdr agent prompt <name> '/exit'`. The pane returns to its shell prompt. herdr may answer `agent_not_running`: the worker has quit.
 
 ## Seen in runs
@@ -125,6 +125,7 @@ $ <the command, whole>                     (for an edit: the file name and the d
 - A subcommand that needs the background service can hang: `opencode auth list`, from an agent's shell, ended after two minutes with `Transport: The operation timed out.` `opencode debug agents` and `opencode debug config`, run in the working directory, answered and show the permission rules and the configuration files in force for the background service; they take no `--standalone`.
 - On its first shell command a worker made two failed tool calls (`Unknown tool 'shell'`, a malformed search) before it found its shell tool. No effect on the result.
 - A literal brief of about 2,900 characters arrived whole through `herdr agent prompt`.
+- **Web access is not fenced.** On opencode 2.3.0 a worker under `shell * deny` and `edit * deny` fetched web pages with no dialog, in three runs. A read-only mode keeps the working tree safe, not the network: say in the brief whether the worker may fetch, and from which hosts.
 
 ## Under Rex
 

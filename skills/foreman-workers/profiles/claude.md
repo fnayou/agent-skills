@@ -31,7 +31,7 @@ and the same six with `git -C *` for a worker that addresses its repository by p
 
 - All are read-only or undone with one command. `git commit -m *` also lets through `git commit -m <message> --amend` on the worker's own unpushed commit.
 - A pattern is matched against the command after the machine's hooks have rewritten it. Where a hook puts a prefix in front of commands, the pattern needs the same prefix: the machine file names it.
-- A pattern also matches its command with no arguments, and a `*` in the middle of a pattern matches any text there.
+- A pattern also matches its command with no arguments, and a `*` in the middle of a pattern matches any text there. Claude Code says so at start, once per such pattern: `⚠ Allow rule Bash(git -C * status *) allows any option at its * · use an exact value`. It is expected for the `git -C *` patterns.
 
 **Run allowlist.** Add the patterns the operator approved for this run to the same `--allowedTools` value. Typical ones: the test command, `git switch -c <branch> <base>`, `git push -u origin <branch>`, `gh pr create *`.
 
