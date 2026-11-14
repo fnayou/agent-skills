@@ -78,6 +78,13 @@ lane, and integration branch on separate lines even when they are equal.
 - Keep same-lane helpers to bounded read-only investigation or review; name
   each one's lane, role, working directory, authority, prohibitions, and stop
   condition.
+- A **scratch helper** may also run beside the lane's writer. It changes
+  nothing in the worktree, its Git metadata, or a declared shared resource,
+  and writes only to its own scratch path outside the worktree, named in its
+  instructions and read by none of the writer's builds, tests, or tools. State
+  its authority as "scratch writes to `<path>`", not as read-only. Start it in
+  a read-only mode with only that path writable when its harness allows, and
+  confirm the worktree is unchanged after it stops.
 - Run multiple writers in one lane only with explicit operator direction and
   non-overlapping file and process scope.
 - Serialize operations that can affect a shared resource or external system
