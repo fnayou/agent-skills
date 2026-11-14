@@ -88,8 +88,11 @@ end. A pane hosts one worker at a time and can host several runs in turn.
    - A **goal brief** states the goal, its context, what to leave alone, and a
      fixed report shape that ends on a sentinel line.
    - Work longer than a screen goes in a **runbook** file outside the working
-     tree. A **script** replaces written-out steps only for long repetitive
-     work, and the operator hears about it before the start.
+     tree. A runbook a worker wrote is read whole before it runs; one too long
+     for the foreman's context comes in parts, one per stage, with a short
+     summary of what crosses them. A **script** replaces written-out steps
+     only for long repetitive work, and the operator hears about it before
+     the start.
 3. **Spawn.** The foreman finds where the project lives (a herdr workspace or
    session, a Rex tab), places the pane by size, labels it (`pi: archive plan`), and
    starts the worker with the start arguments from its profile. It reuses a
@@ -99,7 +102,9 @@ end. A pane hosts one worker at a time and can host several runs in turn.
 5. **Verify from ground truth**: the diff, the commit author and message, the
    files on disk. The worker's report says where to look, not what is true.
 6. **Report and close.** The foreman reports the run and closes every pane it
-   opened once no further run of the task is planned for it.
+   opened once no further run of the task is planned for it. In a sequence the
+   operator asked for, such as a grill, a pane waits for the next item with its
+   worker quit.
 
 One worker at a time per working tree. Parallel workers each get a worktree of
 their own, made the way the project makes worktrees. When a run fails, the
@@ -139,7 +144,9 @@ operator.
 **Allowlists** cut routine dialogs before a run. Each profile has a short
 **standing allowlist** of reversible git commands. A **run allowlist** is
 proposed with the plan and approved by the operator for one worker, and
-stored nowhere.
+stored nowhere. For a kind that cannot take one, a **dialog gate** script
+answers routine dialogs by rules the operator approved before the run, and
+hands every other dialog back to the foreman.
 
 ### Reporting
 
@@ -150,6 +157,10 @@ The foreman numbers runs and gives every event its own block: `STARTED`,
 ```text
 🤖 ── run <n> · <worker> · <kind> · <brief> · <mode> · pane <id> "<label>" ── <EVENT>
 ```
+
+**Advisory runs**, read-only runs whose answers feed one decision, share an
+`ADVISORS STARTED` block and an `ADVISORS DONE` block that compares their
+picks; each keeps its run number.
 
 When all runs are finished it ends with a summary of runs, panes, results,
 dialogs, what was kept, and what is left for the operator.

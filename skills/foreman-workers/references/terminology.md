@@ -29,6 +29,8 @@ Decisions that are hard to reverse are recorded in the repository's
 | **operator-reserved dialog** | A dialog only the operator answers: everything that is not foreman-handled, and every dialog of an unprofiled kind. | second class, operator-only dialog |
 | **standing allowlist** | The short list of narrow, reversible commands in a profile that workers of that kind may run without a dialog in every run. The operator approved it once, in review. | |
 | **run allowlist** | The task-specific commands the foreman proposes with its plan and the operator approves once for that run. It applies to one worker and is stored nowhere. | always-allow, permissions |
+| **dialog gate** | A script of the foreman's that answers a worker's dialogs by rules the operator approved before the run, for a kind that cannot take a run allowlist. It approves only what would be foreman-handled and returns every other dialog to the foreman. | auto-approver |
+| **advisory run** | A read-only run whose answer feeds one decision of the operator's, beside other advisory runs on the same question. It is reported in the advisors' two blocks, and still counted and logged as a run. | advisor table |
 | **run log** | The operator's record of runs on this machine, one row per run, which the foreman adds after its summary. It exists only where the operator created the file, and lives outside the skill. | history, journal |
 | **operator** | The human who owns the machine, watches the panes and keeps every decision the foreman may not take. | user |
 

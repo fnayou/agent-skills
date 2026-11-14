@@ -17,6 +17,7 @@ documentation.
 | **shared resource** | Mutable local state that the lane contract says cannot be used independently by multiple lanes. | Docker or database as a blanket category |
 | **resource owner** | The lane currently designated by the lane contract to serve or control a shared resource. | active lane |
 | **claim** | The project-defined transfer of a shared resource to a new resource owner. | switch |
+| **scratch helper** | A same-lane helper whose only writes go to its own scratch path outside the worktree, which nothing else in the lane reads. It is neither read-only nor a second writer. | read-only helper, when it writes scratch |
 | **handoff** | The verified transition of work or resource ownership from one lane to another. | claim, when work as well as resources moves |
 | **manager workspace** | A UI or session container owned by a terminal or session manager and associated with a worktree path, which may no longer exist. It can exist without an agent. | worktree, lane |
 | **manager workspace group** | A manager-reported grouping of manager workspaces. It is not itself a worktree lane. | grouped workspace |

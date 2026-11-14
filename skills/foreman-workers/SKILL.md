@@ -58,7 +58,7 @@ A kind with no profile of its own is an **unprofiled kind**. Use one only when t
    - A **literal brief** is numbered steps, one command or one edit each, in order. Commands verbatim. Edits as exact old text → exact new text. An `Expect:` line after each step that can be checked; the worker rules turn a mismatch into a stop. Run its read-only commands yourself first, verbatim: it is the only test the brief gets.
    - A **goal brief** is goal, context, fence, and a fixed report shape that ends on a sentinel line (`DONE <n> findings`) — the shape is what makes its answer checkable claim by claim.
    - Work longer than a screen goes in a **runbook** file, with the commands in fenced blocks; the brief then says "read file X, do steps R01–R05, then STOP". Write it outside the working tree, in a scratch directory: there it is your planning. A runbook kept in the repository is a change, so a worker puts it there.
-   - A runbook written by a worker is a draft until you have read it whole and run its read-only commands yourself.
+   - A runbook written by a worker is a draft until you have read it whole and run its read-only commands yourself. When a whole runbook would not fit in your remaining context, ask the planner for it in parts, one per stage, each under a line count you name, plus a short summary file of what crosses stages: dependencies between parts and the decisions still open. Read the summary whole before the first part runs, and each part whole, with its read-only commands run, before its own execution run. When even one part will not fit, stop and tell the operator.
    - A **script** takes the place of written-out steps only for long repetitive execution, normally more than twenty files or steps; below that, write the steps out. Write it outside the working tree, for a worker to run. It enumerates its targets, checks every precondition before it opens any target for writing, makes no change when a check fails, and prints fixed output for the `Expect:` line. Before the worker starts, tell the operator that the run uses a script, what it changes and how many files it targets. Get the operator's word before the start when the script deletes, moves or renames files, or when any target is not both tracked and clean in git; otherwise no confirmation is needed.
 
 3. **Spawn — as its own command, nothing slow in front of it.** Split a pane, label it, and start the worker in it with the start arguments from its profile; the multiplexer file has the commands.
@@ -83,7 +83,7 @@ A kind with no profile of its own is an **unprofiled kind**. Use one only when t
 
    Output-condensing hooks reshape `ls`, `grep`, `find` output, for you and for the worker: counting with `ls | grep -c` returned 0 on a full directory. They can change what a command does: `git show $b:<path>`, with the revision in a shell variable, printed the commit and its diff instead of the file. For a check that reads a file at a revision, call `/usr/bin/git`. For checks whose output will be compared, use a `python3 -c "…print('ROWS', n)"` one-liner with a fixed output format. Shell hooks hang commands too: a directory-change hook fires on every `cd`, and `ls` may be an alias for a slower tool. In your own commands use absolute paths, `git -C <dir>`, `/bin/ls` and `/bin/cat`. When a command needs a working directory (a test run), give it a plain shell, which has no hooks: `/bin/sh -c 'cd <dir> && <command>'`. A bare `cd`, alone or inside `( … )`, is what hangs. A check of yours that hangs proves nothing: kill it, rerun the same check with the plain binary or a short `python3 -c`, and never chain the next step behind an unproven one.
 
-6. **Report the run, and close the pane after its last run.** Tell the operator, in the block format of **Reporting to the operator**: what the worker did, what you checked yourself, any deviation from the brief, and what is left for them. When no further run of this task is planned for the pane, close it then, not at the end of the task. A run that might come later is not a planned run. Close every pane you opened, including after a failure, and every tab you opened once its last run is reported. A pane you did not open but started a worker in, such as the pane of a worktree's workspace, stays open: end the worker with the quit command in its profile and check the pane is back at its shell prompt. An unprofiled kind has no quit command seen yet: tell the operator the pane still holds its worker. Leave every other pane you did not create alone.
+6. **Report the run, and close the pane after its last run.** Tell the operator, in the block format of **Reporting to the operator**: what the worker did, what you checked yourself, any deviation from the brief, and what is left for them. When no further run of this task is planned for the pane, close it then, not at the end of the task. A run that might come later is not a planned run. In a sequence the operator asked for — a grill, a list of questions or steps — the next item is a planned run even while the operator's answer to the current one is pending: keep the pane, and quit its worker as soon as its run is verified, unless the next run goes to the same worker. Before reusing a kept pane, check it still exists and is at its shell prompt. Close every pane you opened, including after a failure, and every tab you opened once its last run is reported. A pane you did not open but started a worker in, such as the pane of a worktree's workspace, stays open: end the worker with the quit command in its profile and check the pane is back at its shell prompt. An unprofiled kind has no quit command seen yet: tell the operator the pane still holds its worker. Leave every other pane you did not create alone.
 
 One worker at a time per working tree: workers share the checkout and the git index. For several workers at once, read [`parallel.md`](parallel.md) first.
 
@@ -140,6 +140,7 @@ A dialog you answer costs paid tokens, and your own permission check can refuse 
 - Write each pattern as narrowly as the brief allows, and say in your proposal what else it would let through. A pattern ending in `*` covers every argument after it.
 - A request that says in so many words which commands it approves for the allowlist is the approval: pass exactly those, and say so in `STARTED`. A request that only describes the task ("run the tests", "on a new branch") describes work; it approves no pattern.
 - When the operator declines, start the worker with the standing allowlist only, and handle the remaining dialogs one by one.
+- **Dialog gate.** For a kind that cannot take a run allowlist, a script of yours may answer its dialogs instead: it reads each dialog in full and presses the single-use key when the command matches its rules. Its rules follow the run allowlist's: the operator approves them, exactly as written, before the run; they match only commands that would be foreman-handled dialogs; every other dialog is returned to you to sort. The gate logs each command it approves, and `DONE` counts its approvals apart from yours. A change to its rules during the run goes to the operator first.
 
 ## Reporting to the operator
 
@@ -161,6 +162,19 @@ Events and what the lines carry:
 - `FAILED` or `DISCARDED` — why, and what state it left behind.
 - `CLOSED` — only when the pane itself is closed; name the runs it hosted.
 
+**Advisory runs** are read-only runs whose answers feed one decision of the operator's, such as two kinds advising on the same question. They keep their numbers and run-log rows, and are reported in two blocks instead of a `STARTED` and a `DONE` each:
+
+```
+🤖 ── ADVISORS STARTED · <decision> · runs <n>–<m>
+run <n> · <kind>/<model> · <brief> · <mode> · pane <id> "<label>" · new or reused pane · fresh or same worker
+
+🤖 ── ADVISORS DONE · <decision> · runs <n>–<m>
+run <n> · <pick> · verified or unverified · <dialogs>
+<the comparison, then your own pick>
+```
+
+`DIALOG`, `RETRYING`, `FAILED` and `CLOSED` of an advisory run keep their own blocks.
+
 When all runs are finished, end with a summary:
 
 ```
@@ -168,7 +182,7 @@ When all runs are finished, end with a summary:
 runs:    <n> (<n> literal, <n> goal) · workers: <n> pi, <n> claude
 panes:   <n> opened · <n> reuses · <n> closed · <n> left open
 results: <n> done and verified · <n> failed · <n> discarded · <n> retried · <n> escalated
-dialogs: <n> foreman-handled · <n> operator-reserved (<n> approved, <n> declined)
+dialogs: <n> foreman-handled (<n> by a dialog gate) · <n> operator-reserved (<n> approved, <n> declined)
 kept:    <branches, PRs, files — or "nothing kept">
 open:    <what the operator still has to do, or "nothing">
 ```
