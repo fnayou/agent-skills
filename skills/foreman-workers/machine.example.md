@@ -14,7 +14,7 @@ Every entry below is an example of a fact that has cost a run on some machine. K
 ## Hooks
 
 - A hook that shortens command output is active for `<kinds>`. It changes what `ls`, `grep`, `find` and git commands print: `git commit` prints `<what it prints>`.
-- That hook rewrites a command before the permission check: `git status` reaches the check as `<prefix> git status`. In allowlist patterns for the commands it rewrites, write the prefix: `Bash(<prefix> git status *)`. Commands it leaves alone take no prefix.
+- That hook rewrites a command before the permission check: `git status` reaches the check as `<prefix> git status`. In allowlist patterns for the commands it rewrites, write the prefix: `Bash(<prefix> git status *)`. Commands it leaves alone take no prefix. It rewrites: `<every command, such as git, grep, ls, find, gh, task>`.
 - A plugin that shortens replies is active for `<kinds>`: workers answer in clipped sentences. Raw command output is not affected.
 
 ## Shell
