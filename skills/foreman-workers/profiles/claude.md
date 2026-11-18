@@ -35,6 +35,13 @@ and the same six with `git -C *` for a worker that addresses its repository by p
 
 **Run allowlist.** Add the patterns the operator approved for this run to the same `--allowedTools` value. Typical ones: the test command, `git switch -c <branch> <base>`, `git push -u origin <branch>`, `gh pr create *`.
 
+**Allow rules from settings.** A claude worker also runs under the operator's and the project's Claude settings, and their `permissions.allow` rules apply on top of `--allowedTools`, not in its place. In one repository, a gitignored `.claude/settings.local.json` allowed `Bash(git *)` and `Bash(gh pr *)`: a worker's `git push` and `gh pr create` ran with no dialog, and the dialog gate never saw them. `Bash(git *)` also matches `git push --force`, a push to the default branch, `git reset --hard` and `git branch -D`.
+
+- Before the first claude worker in a tree, read the `permissions.allow` lists of `~/.claude/settings.json`, `<repository>/.claude/settings.json` and `<repository>/.claude/settings.local.json`.
+- Name in `STARTED` every briefed action those rules already allow: it runs without a dialog, held only by the brief.
+- When they allow an operator-reserved command the brief does not call for, tell the operator before the start, and pass it to `--disallowedTools` (`Bash(git push --force *)`, `Bash(git reset --hard *)`, `Bash(git branch -D *)`). Deny rules take precedence over allow rules; this use has not yet been seen in a run, so check the first worker's pane for a refusal before relying on it.
+- The settings files are the operator's: report them, change nothing in them.
+
 For a goal brief, read the ticket before you propose the run allowlist, and add the read-only commands of the tools it names: for a CI or pull request task `gh pr view *`, `gh pr checks *`, `gh run view *`, `gh run list *`, `git fetch origin *`; the project's linter in its check form; the project's task runner, for the tasks the ticket names. Most of a goal-brief worker's dialogs come from these, not from git.
 
 **As planner.** To have it investigate and draft a runbook for pi, name a scratch directory outside the working tree and add `--add-dir <that directory>`: with `acceptEdits` it then writes the runbook there without a dialog. In the goal brief, fence it to reading the repository and writing that one file, give it the runbook shape (numbered steps, one command or exact edit each, an `Expect:` line per step, commands in fenced blocks), and have it end its report with the path of the file.
@@ -60,6 +67,8 @@ It asks before each shell command that no allowlist covers, with status `blocked
 
 - Without an allowlist, dialogs add up: 6 to 10 for a one-line fix with a test run, about 15 for a small code-plus-test task.
 - With an allowlist, goal briefs still raise many: 18 to 55 foreman-handled dialogs per run on one project's goal briefs in `acceptEdits` on 2026-10-23. The foreman had passed the standing allowlist with its hook-prefixed twins and a run allowlist for tests, branch, push and pull request, and every brief carried the one-command line. Of 1325 Bash calls in the ten heaviest worker sessions: 29% matched the allowlist; 26% were chains, pipes or heredocs; 6% read or searched files through `grep`, `sed -n` or `cat`; 39% were single commands of the task's own tools that no pattern covered (`gh pr`, `gh api`, `gh run`, `git fetch`, `git ls-remote`, `docker`, the linter, the task runner).
+- Workers wrote check output to log files in their own session scratchpad (`for t in test lint docs; do task $t > <scratchpad>/$t.log; done`), three times in one task, under a brief that said "each as its own plain command". Decline it, and ask for the plain commands in the next prompt.
+- At an idle prompt Claude Code shows a greyed-out suggestion for the next prompt, such as `push the branch and open the PR`. A pane capture shows it like typed text. It is not the operator's input: act only on what the operator tells you.
 - After about four approvals in a row, a foreman's own permission check has refused its next key press in the worker pane. The run then waits for the operator. An allowlist that covers the routine commands avoids the dialogs that lead there.
 
 ## Under Rex
