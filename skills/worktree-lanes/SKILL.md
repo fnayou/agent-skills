@@ -63,7 +63,9 @@ Lane census
 
 The lane census is complete only when every field is filled, using `unknown`
 or `none` rather than a guess or an omission. Keep the current lane, primary
-lane, and integration branch on separate lines even when they are equal.
+lane, and integration branch on separate lines even when they are equal. Use
+the full template every time, including after the conversation has been
+summarised: a one-line census is incomplete.
 
 ## Operate within the lane
 
@@ -74,7 +76,9 @@ lane, and integration branch on separate lines even when they are equal.
   contract; do not clean up or repair another lane opportunistically.
 - Opening another pane or starting another agent in the same worktree creates
   neither a new lane nor write isolation. Default to one writing agent per
-  lane, and use separate worktree lanes for parallel writers.
+  lane, and use separate worktree lanes for parallel writers. When every
+  writer's checks need one shared resource that only one lane can own at a
+  time, prefer one lane and run the writers in sequence.
 - Keep same-lane helpers to bounded read-only investigation or review; name
   each one's lane, role, working directory, authority, prohibitions, and stop
   condition.
@@ -86,7 +90,11 @@ lane, and integration branch on separate lines even when they are equal.
   a read-only mode with only that path writable when its harness allows, and
   confirm the worktree is unchanged after it stops.
 - Run multiple writers in one lane only with explicit operator direction and
-  non-overlapping file and process scope.
+  non-overlapping file and process scope, and state each one as a writer. An
+  agent that runs the lane's branch code against a shared resource or external
+  system counts as a writer, even when it changes no file in the worktree.
+- Run a lane's Git commands one at a time: a `git fetch` and a `git pull` run
+  in parallel race on the same ref lock.
 - Serialize operations that can affect a shared resource or external system
   across all agents in a lane, including read-only helpers.
 - Treat worktree lanes as concurrency isolation, not security sandboxes.
@@ -113,6 +121,10 @@ lane, and integration branch on separate lines even when they are equal.
 - Rebase, force-push, merge, deploy, credential movement, worktree or branch
   removal, other destructive cleanup, and external mutations require explicit
   operator authorization, which covers only the lane it names.
+- To update another author's branch from the primary lane, with operator
+  authorization, check it out detached, create no local branch, push only as
+  a fast-forward (`git push origin HEAD:refs/heads/<branch>`), then switch
+  back to the integration branch.
 
 ## Hand off a shared resource
 
