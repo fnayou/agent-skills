@@ -53,6 +53,7 @@ So a pi worker is held by its mode and its brief:
 - `agent_prompt_stalled` or a timeout can mean the model server is down, not that the prompt was lost. Read the pane before resending.
 - A worker that goes `idle` after long reasoning, with no command run and no edit made, may have hit the model's output cap rather than lost its way. Look at the last assistant entry of its session under `~/.pi/agent/sessions/`: `"stopReason":"length"` means the reply was cut at the cap. The cap is the model's `maxTokens` in `~/.pi/agent/models.json`. A model with thinking on spent the whole cap thinking: 45 replies of 48 that stopped at a cap of 8192 held only thinking, with no tool call. Raise `maxTokens` before you shorten the brief: shortening did not help, and raising the cap to 65536 ended the stops. Changing `models.json` is the operator's.
 - Its closing summary can misquote an output it printed correctly a few lines above. Read the raw output.
+- At the end of a long run on the local model, pi wrote its finished report over and over ("FINAL ANSWER — I am writing it now, for real this time"), with the status still `working`. A wait for the state to leave `working` never ends there. End the wait also when the brief's closing line appears in the pane, then quit the worker.
 - With an output-condensing hook active, `git commit` prints `ok <hash>`. Write `Expect:` lines that hold either way ("no error"), or the worker reports a mismatch on a correct commit.
 
 ## Under Rex

@@ -83,6 +83,7 @@ Would you like to run the following command?
 - `herdr agent send-keys <name> y` approves this one edit or command. `herdr agent send-keys <name> esc` declines. Options 2 are the operator's.
 - A declined command ends the worker's turn: `✗ You canceled the request`, then `Conversation interrupted`, and no report. Send the next prompt to say what to do instead.
 - A dialog about a rate limit has been seen with status `idle`. Read the pane after every wait.
+- Near its limits codex offers another model mid-task (`Approaching rate limits — Switch to <model>?`). The model and the credits it spends are the operator's: the dialog is operator-reserved.
 
 ## Waiting
 
@@ -95,6 +96,7 @@ Would you like to run the following command?
 
 ## Seen in runs
 
+- The first prompt after `/new` lost its first 45 to 50 characters, three times in one task under Rex: a brief path arrived as `eec127f/briefs/…`, and the worker stopped and asked for it. A 12 s wait before the prompt did not help. Send a throwaway prompt (`x`) first, then the brief.
 - A worker asked which instruction files it had loaded named a file that does not exist. Its own account of its context is not evidence; a word planted in the rules and asked back is.
 
 ## Under Rex
