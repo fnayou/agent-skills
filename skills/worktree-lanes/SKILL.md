@@ -47,7 +47,11 @@ Before the first repository-affecting action:
    shared merely because they exist. When no contract is found, report
    `none-found`, treat every shared resource as `unknown`, and follow
    [lane contract](references/lane-contract.md) only if the operator asks for
-   one.
+   one. When running a declared ownership check would execute branch code,
+   read the same fact read-only instead (a container's mounts, a lock file)
+   and name that source in the census. When the contract's own checks fail
+   before any lane action (an unsupported tool version, missing hook
+   approvals), stop and report them.
 7. Report the lane census before proposing a lane-sensitive action.
 
 ```text
@@ -55,7 +59,7 @@ Lane census
 - Current lane: <branch-or-detached> at <worktree-root>
 - Primary lane: <branch-or-detached> at <primary-worktree-root>
 - Integration branch: <branch-or-unknown>
-- Other linked lanes: <list-or-none>
+- Other linked lanes: <list-or-none, each with its commits not on the integration branch and whether they are pushed>
 - Current tree: <clean-or-summary>
 - Shared resources: <owners-and-state, none-declared, or unknown>
 - Lane contract: <source-or-none-found>
@@ -117,7 +121,8 @@ summarised: a one-line census is incomplete.
   server access.
 - Installing worktree managers, plugins, or other tools is outside this skill.
   It belongs to the project's own installer and needs explicit operator
-  approval.
+  approval. So does changing a tool's configuration outside the worktree,
+  such as recording a worktree manager's hook approvals.
 - Rebase, force-push, merge, deploy, credential movement, worktree or branch
   removal, other destructive cleanup, and external mutations require explicit
   operator authorization, which covers only the lane it names.
