@@ -92,10 +92,11 @@ Would you like to run the following command?
 
 ## Limits
 
-`herdr agent prompt <name> '/status'` prints the account, the sandbox in force and both limits with what is left of each, without a model turn. herdr answers it with `agent_prompt_stalled`; read the pane. Check it before the first brief when the operator has given a budget, and give what is left in the summary.
+`herdr agent prompt <name> '/status'` prints the account, the sandbox in force and both limits with what is left of each, without a model turn. herdr answers it with `agent_prompt_stalled`; read the pane. Check it before the first brief when the operator has given a budget, and give what is left in the summary. When a start shows either limit below 25%, tell the operator before the first brief, budget or not.
 
 ## Seen in runs
 
+- A pasted brief was not submitted by the first Enter; a second Enter submitted it. Read the pane after sending.
 - The first prompt after `/new` lost its first 45 to 50 characters, three times in one task under Rex: a brief path arrived as `eec127f/briefs/…`, and the worker stopped and asked for it. A 12 s wait before the prompt did not help. Send a throwaway prompt (`x`) first, then the brief.
 - A worker asked which instruction files it had loaded named a file that does not exist. Its own account of its context is not evidence; a word planted in the rules and asked back is.
 
