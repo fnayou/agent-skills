@@ -36,6 +36,8 @@ To end the worker and free its pane for a fresh one: `herdr agent prompt <name> 
 
 A pi worker on the default local model takes a **literal brief**, and only that. A goal brief goes to pi only on a model the operator named for goal briefs in `~/.config/foreman-workers/machine.md`; none is named by default. With the rules loaded, the brief carries only the task: the fence particular to this task, the numbered steps with their `Expect:` lines, and the report wanted.
 
+Paths are where the local model slips. Name one working path per brief: given two absolute paths that share a prefix, a worker ran a step in the wrong one, then defended its reading against a correction. Keep paths short: a worker retyped a dash-joined segment `-Users-<user>-work-…` as `-Users-<user>-work/…` twice, and a short symlink to the file ended it.
+
 A local model commits more often than told, inventing messages for intermediate steps. The worker rules cover it; keep one commit command per commit you want.
 
 ## Dialogs

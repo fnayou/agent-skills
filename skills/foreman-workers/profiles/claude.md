@@ -45,6 +45,8 @@ and the same six with `git -C *` for a worker that addresses its repository by p
 
 For a goal brief, read the ticket before you propose the run allowlist, and add the read-only commands of the tools it names: for a CI or pull request task `gh pr view *`, `gh pr checks *`, `gh run view *`, `gh run list *`, `git fetch origin *`; the project's linter in its check form; the project's task runner, for the tasks the ticket names. Most of a goal-brief worker's dialogs come from these, not from git.
 
+An allow rule for a file path is relative to the project: `Write(/abs/**)` did not match an absolute path, `Write(//abs/**)` did. The unmatched Write dialogs showed only a basename, the path off-screen, so they were declined.
+
 **As planner.** To have it investigate and draft a runbook for pi, name a scratch directory outside the working tree and add `--add-dir <that directory>`: with `acceptEdits` it then writes the runbook there without a dialog. In the goal brief, fence it to reading the repository and writing that one file, give it the runbook shape (numbered steps, one command or exact edit each, an `Expect:` line per step, commands in fenced blocks), and have it end its report with the path of the file.
 
 To end the worker and free its pane for a fresh one: `herdr agent prompt <name> '/exit'`. The pane returns to its shell prompt. A pane that is about to be closed needs no exit.
@@ -53,7 +55,7 @@ To end the worker and free its pane for a fresh one: `herdr agent prompt <name> 
 
 A Claude Code worker takes **goal briefs** and literal briefs. With the rules loaded, the brief carries the task: goal, context, the fence particular to it, the report shape.
 
-Put this in every brief: read files with the Read tool, create and change them with the Write and Edit tools, search with the Grep and Glob tools, and keep each Bash call to one short command — no heredocs, no chains, no pipes, no `cd` in front. A short single command is what an allowlist pattern can match, and what can be read in a dialog; a dialog you cannot read is declined. The worker rules name `/bin/cat` for kinds that have no read tool; a claude worker reads with Read.
+Put this in every brief: read files with the Read tool, create and change them with the Write and Edit tools, search with the Grep and Glob tools, and keep each Bash call to one short command — no heredocs, no chains, no pipes, no `cd` in front. A short single command is what an allowlist pattern can match, and what can be read in a dialog; a dialog you cannot read is declined. The worker rules name `/bin/cat` for kinds that have no read tool; a claude worker reads with Read. Reading a brief file outside the working tree raised a Read dialog: start the worker with `--add-dir <the brief's directory>`.
 
 The line in the brief does not hold on its own: workers that had it still chained a quarter of their commands (**Seen in runs**). Expect those dialogs, and sort each one with the guard rails as usual.
 
@@ -62,7 +64,7 @@ The line in the brief does not hold on its own: workers that had it still chaine
 It asks before each shell command that no allowlist covers, with status `blocked`; it has also been seen at a dialog with status `idle`, so read the pane after every wait. Sort each dialog with the guard rails.
 
 - Before approving a run of code the worker wrote (its new test, its script), read that code on disk.
-- A directory Claude Code has never been started in raises a trust dialog at start: `agent start` returns `agent_not_ready`, and the selected answer is "No, exit". A new worktree counts as such a directory only when its repository was never trusted: started in a new worktree of a repository whose main checkout had been trusted, a worker raised no dialog. The dialog is outside the brief, so it is the operator's.
+- A directory Claude Code has never been started in raises a trust dialog at start: `agent start` returns `agent_not_ready`, and the selected answer is "No, exit". A new worktree counts as such a directory only when its repository was never trusted: started in a new worktree of a repository whose main checkout had been trusted, a worker raised no dialog. The dialog is outside the brief, so it is the operator's. A brief typed into the pane while the dialog was open went to the dialog instead, and the worker exited: read the pane after the start, before the brief.
 
 ## Seen in runs
 
