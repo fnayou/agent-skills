@@ -62,6 +62,10 @@ rex block call -s "$REX_SESSION" -b "$P" program_status
 
 Use the record without an `id`: opencode adds a second record per opencode session. `state` is `idle`, `working`, `done` or `blocked`; a `blocked` record carries `kind=permission`. The record of the last turn stays until the worker starts the next: after a prompt, wait for `working`, then for the turn to end. **A turn has ended when the state leaves `working`**, for `done`, `idle` or `blocked`, depending on the kind and on how it ended; its profile says which. Then read the pane.
 
+- A worker can reach its first dialog within seconds of the prompt, so a wait started after that sees only `blocked`, never `working`. Before you prompt or send a key, record `state`, `msg` and `updated_at`; then wait until the record changes and its state is not `working`.
+- `msg` can be redacted: `approve Bash: rtk task secrets:[REDACTED]` for `rtk task secrets:decrypt`. Read the command from the pane capture before you answer.
+- Under Claude Code, send the key and wait in one foreground call that stops at the next dialog. Waits in the background tool each raised a completion notice, including watchers for dialogs already answered.
+
 Poll every two seconds in a loop that stops before your shell tool's time limit, and start a new loop for a longer turn. `rex events -s "$REX_SESSION" --json` streams the same changes as `block_event` entries named `program_status_changed`, with the pane's `block_id`; the stream also carries your own pane and a `client_connected` for every `rex` call, so filter by the worker's pane.
 
 ### Read the pane
