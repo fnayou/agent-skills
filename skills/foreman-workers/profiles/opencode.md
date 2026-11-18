@@ -85,6 +85,7 @@ An allowlist is a list of `allow` rules for `shell`, written after the `ask` rul
 - All are read-only or undone with one command. The worker rules make workers address the repository with `git -C <dir>`, which is the form these match.
 - The pattern is matched against the command as the worker wrote it. Write no hook prefix in it.
 - A command chained behind an allowed one still asks: `git -C <dir> status --porcelain && <another command>` raised a dialog under an allow rule for `git -C * status *`.
+- On opencode 2.3.0 a chain behind a pattern that ends in `*` did not ask: a worker's commit and push ran with no dialog under `git -C * commit -m *`, with no rule for push. The likeliest reading is `commit -m … && git push` matched whole. Brief every push and PR command as its own step, and check the remote after a commit run.
 
 **Run allowlist.** Add one `allow` rule per pattern the operator approved for this run, after the standing ones. A rule for `git -C * switch -c *` and one for `python3 -m unittest` each let their command through without a dialog.
 
@@ -95,6 +96,7 @@ An opencode worker takes **literal briefs** and **goal briefs**. With the rules 
 - On a goal brief (find the cause of a failing test, fix it on a new branch, one commit, a fixed report shape) a worker on the operator's model did all of it correctly. It chose its own commands: `git branch` and then `git switch` where a literal brief would write `git switch -c`, so the run allowlist written for that form missed twice. Expect a few dialogs on a goal brief, and say in it how git is addressed and that commands run alone.
 - Write each command as one short command, with absolute paths. A chain defeats the allowlist.
 - Name the tool for an edit ("with your file edit tool") and give old text and new text.
+- Name the read tools too. GLM-5.3-Flash read files with shell `sed -n` and `grep` by default, one dialog each under `shell * ask`. After one reject, the prompt "use your built-in read and grep tools" ended it for the rest of the run.
 - A closing line that the brief itself quotes cannot be waited for in the pane: the brief is on the screen too. Wait on the status.
 
 ## Dialogs
@@ -117,7 +119,7 @@ $ <the command, whole>                     (for an edit: the file name and the d
 ## Start, model, end
 
 - `agent start` returns `idle` and ready while the pane still shows the splash. Read the pane again a few seconds later, until the prompt box `Ask anything…` is there, before you send the brief.
-- The line under the prompt box names the agent and the model (`Build · <model>`). The worker runs on the model the operator last used, on the operator's opencode subscription; the interactive command has no model argument. On opencode 2.3.0, a `"model": "<provider>/<model>"` key in the configuration directory's `opencode.jsonc` chose the model.
+- The line under the prompt box names the agent and the model (`Build · <model>`). The worker runs on the model the operator last used, on the operator's opencode subscription; the interactive command has no model argument. On opencode 2.3.0, a `"model": "<provider>/<model>"` key in the configuration directory's `opencode.jsonc` chose the model. Read that line before each brief: it names the subscription the run spends (`Build · GLM-5.3-Flash OpenCode Go`).
 - To end the worker and free its pane for a fresh one: `herdr agent prompt <name> '/exit'`. The pane returns to its shell prompt. herdr may answer `agent_not_running`: the worker has quit.
 
 ## Seen in runs
@@ -133,5 +135,7 @@ Seen on Rex 0.1.0-preview.14 with opencode 2.2.7, in one probe run per step. [`.
 
 - **Start:** type `env -u REX_SESSION -u REX_BLOCK OPENCODE_CONFIG_DIR=<configuration directory> opencode --standalone` into the pane's shell. The status read `idle` within two seconds, with the prompt box on screen. The `permissions` rules above still applied on 2.2.7: under `shell * ask` a `touch` raised a dialog.
 - **Status:** a turn ends with `idle`; no `done` was seen. At a dialog, `blocked` with `kind=permission` and the `msg` `Permission needs input`; `title` names the task. opencode writes two records, one without an `id` and one per opencode session (`id=ses_…`): read the one without an `id`.
+- **A dialog under `working`.** On opencode 2.3.0 the status stayed `working` for 21 minutes while a `bash` dialog was open, and `rex capture --trim` showed no dialog, only `+ 2 commands, 4 edits, 1 read` and a blank body. A wait for the state to leave `working` never ends there. When a turn runs longer than its brief warrants, capture with `--format=vt` and look for `Permission required`.
+- **The report.** The full-screen view can stay scrolled away from the end ("Jump to latest ↓"), with no report on screen after `idle`. opencode 2.3.0 keeps sessions in `~/.local/share/opencode/opencode.db`: find the session in table `session_v2` by its `directory`, then read its rows in `session_message`. The tables `part` and `session` held only older sessions.
 - **Dialog:** `right right enter` rejected: `The user declined this tool call`, the status became `idle`, and no report followed. The selected option is shown by colour alone; capture with `--format=vt` before a key that matters.
 - **Quit:** type `/exit` and Enter. The status records were removed and the shell came back to the foreground.

@@ -27,7 +27,7 @@ rex send -s "$REX_SESSION" -b "$P" "env -u REX_SESSION -u REX_BLOCK <start comma
 ```
 
 - The shell stays in the pane after the worker quits, so the pane can host the next worker.
-- **Before you type a start command, check that the shell holds the pane:** `rex block call -s "$REX_SESSION" -b "$P" process` names it as `foreground`. A start command typed into a live worker is a chat message to it: the worker runs nothing, answers or ignores it, then takes the brief that follows as the same worker. A foreman's script that skipped this check reused one worker per pane across six briefs it reported as fresh, and an opencode context grew from 92.6K to 481.5K tokens.
+- **Before you type a start command, check that the shell holds the pane:** `rex block call -s "$REX_SESSION" -b "$P" process` names it as `foreground`. Right after `rex split` it named `login` for about a second; wait until it names the shell. A start command typed into a live worker is a chat message to it: the worker runs nothing, answers or ignores it, then takes the brief that follows as the same worker. A foreman's script that skipped this check reused one worker per pane across six briefs it reported as fresh, and an opencode context grew from 92.6K to 481.5K tokens.
 - `env -u REX_SESSION -u REX_BLOCK` keeps your session and pane ids from the worker. Rex installs a start-up hook in Claude Code and codex that tells an agent to rename `$REX_SESSION`; a codex worker that inherited the ids tried to rename the operator's session before reading its brief. With both unset the hook says nothing.
 - An environment variable the profile asks for goes on the same line, before the command (`OPENCODE_CONFIG_DIR=<dir> opencode …`).
 - The worker is ready when its status reads `idle` (see **Status**): every kind reported it within two seconds. Read the pane once before the first brief.
@@ -50,7 +50,7 @@ rex send -s "$REX_SESSION" -b "$P" "Read <brief file> and follow it exactly." &&
   rex send-key -s "$REX_SESSION" -b "$P" enter
 ```
 
-One line is all `rex send` carries safely: it types the text into the worker's prompt, where a newline can submit early. Every kind read its brief file, a file outside the working tree included.
+One line is all `rex send` carries safely: it types the text into the worker's prompt, where a newline can submit early. A long brief sent inline reached a claude worker cut short, twice: "Your message arrived truncated: I saw only from item 3 onward". Every kind read its brief file, a file outside the working tree included.
 
 ### Status
 
